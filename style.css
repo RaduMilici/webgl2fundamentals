@@ -1,0 +1,10 @@
+body {
+    margin: 0;
+    border: 0;
+    background-color: white;
+}
+#webGl {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
