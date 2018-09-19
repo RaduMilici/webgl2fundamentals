@@ -1,7 +1,9 @@
-import { vertexShaderSource, fragmentShaderSource } from './shadersSources';
+import { pixelsVertexShaderSource, fragmentShaderSource } from './shadersSources';
 import { createShader } from './shader';
 import { createProgram } from "./program";
+import { randomInt } from 'pulsar-pathfinding';
 import resize from './resize';
+import setRectangle from './setRectangle';
 import trianglePoints from './const/trianglePoints';
 
 // context
@@ -9,11 +11,13 @@ const canvas = document.querySelector('#webGl');
 resize(canvas);
 const gl = canvas.getContext('webgl2');
 // shaders and program
-const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+const vertexShader = createShader(gl, gl.VERTEX_SHADER, pixelsVertexShaderSource);
 const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 const program = createProgram(gl, vertexShader, fragmentShader);
 // attribute and buffer
 const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
+const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, trianglePoints, gl.STATIC_DRAW);
@@ -37,4 +41,23 @@ gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 gl.clearColor(0, 0, 0, 0);
 gl.clear(gl.COLOR_BUFFER_BIT);
 gl.useProgram(program);
-gl.drawArrays(gl.TRIANGLES, 0, 3);
+/*
+gl.useProgram is like gl.bindBuffer above in that it sets the current program.
+After that all the gl.uniformXXX functions set uniforms on the current program.
+ */
+gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+
+for (let i = 0; i < 5; i++) {
+  const x = randomInt(0, 400);
+  const y = randomInt(0, 400);
+  const width = randomInt(0, 400);
+  const height = randomInt(0, 400);
+  setRectangle(gl, x, y, width, height);
+
+  const r = Math.random();
+  const g = Math.random();
+  const b = Math.random();
+  gl.uniform4f(colorUniformLocation, r, g, b, 1);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+
