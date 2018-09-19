@@ -20,7 +20,9 @@ uniform vec4 u_color;
 out vec4 outColor;
 
 void main() {
-  outColor = u_color;
+  float amp = 5.0; 
+  float sinColor = (sin(gl_FragCoord.x) * sin(gl_FragCoord.y)) * amp;
+  outColor = u_color + sinColor;
 }
 `;
 
@@ -219,7 +221,7 @@ void main() {
    */
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 50; i++) {
     const x = randomInt(0, 400);
     const y = randomInt(0, 400);
     const width = randomInt(0, 400);

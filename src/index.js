@@ -47,7 +47,7 @@ After that all the gl.uniformXXX functions set uniforms on the current program.
  */
 gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 50; i++) {
   const x = randomInt(0, 400);
   const y = randomInt(0, 400);
   const width = randomInt(0, 400);

@@ -24,7 +24,9 @@ uniform vec4 u_color;
 out vec4 outColor;
 
 void main() {
-  outColor = u_color;
+  float amp = 5.0; 
+  float sinColor = (sin(gl_FragCoord.x) * sin(gl_FragCoord.y)) * amp;
+  outColor = u_color + sinColor;
 }
 `;
 
