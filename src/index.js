@@ -14,7 +14,7 @@ const gl = canvas.getContext('webgl2');
 const vertexShader = createShader(gl, gl.VERTEX_SHADER, pixelsVertexShaderSource);
 const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 const program = createProgram(gl, vertexShader, fragmentShader);
-// attribute and buffer
+// attributes, uniforms and buffer
 const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
 const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
@@ -47,11 +47,11 @@ After that all the gl.uniformXXX functions set uniforms on the current program.
  */
 gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
-for (let i = 0; i < 50; i++) {
-  const x = randomInt(0, 400);
-  const y = randomInt(0, 400);
-  const width = randomInt(0, 400);
-  const height = randomInt(0, 400);
+for (let i = 0; i < 250; i++) {
+  const x = randomInt(0, 800);
+  const y = randomInt(0, 800);
+  const width = 50;
+  const height = 50;
   setRectangle(gl, x, y, width, height);
 
   const r = Math.random();

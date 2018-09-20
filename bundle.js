@@ -20,9 +20,9 @@ uniform vec4 u_color;
 out vec4 outColor;
 
 void main() {
-  float amp = 5.0; 
-  float sinColor = (sin(gl_FragCoord.x) * sin(gl_FragCoord.y)) * amp;
-  outColor = u_color + sinColor;
+  //float amp = 5.0; 
+  //float sinColor = (sin(gl_FragCoord.x) * sin(gl_FragCoord.y)) * amp;
+  outColor = u_color;
 }
 `;
 
@@ -168,6 +168,10 @@ void main() {
       x2, y1,
       x2, y2
     ]);
+    // NOTE: gl.bufferData(gl.ARRAY_BUFFER, ...) will affect
+    // whatever buffer is bound to the `ARRAY_BUFFER` bind point
+    // but so far we only have one buffer. If we had more than one
+    // buffer we'd want to bind that buffer to `ARRAY_BUFFER` first.
 
     gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
   };
@@ -188,7 +192,7 @@ void main() {
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, pixelsVertexShaderSource);
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
   const program = createProgram(gl, vertexShader, fragmentShader);
-  // attribute and buffer
+  // attributes, uniforms and buffer
   const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
   const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
   const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
@@ -221,11 +225,11 @@ void main() {
    */
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
-  for (let i = 0; i < 50; i++) {
-    const x = randomInt(0, 400);
-    const y = randomInt(0, 400);
-    const width = randomInt(0, 400);
-    const height = randomInt(0, 400);
+  for (let i = 0; i < 250; i++) {
+    const x = randomInt(0, 800);
+    const y = randomInt(0, 800);
+    const width = 50;
+    const height = 50;
     setRectangle(gl, x, y, width, height);
 
     const r = Math.random();
