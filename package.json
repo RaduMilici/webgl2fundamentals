@@ -4,9 +4,9 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "concurrently \"lite-server\" \"npm run build-watch\"",
-    "build": "rollup src/index.js --file bundle.js --format iife",
-    "build-watch": "rollup src/index.js --file bundle.js --format iife --watch",
+    "dev": "concurrently \"lite-server --baseDir=\"fundamentals\"\" \"npm run build-watch\"",
+    "build": "rollup fundamentals/src/index.js --file fundamentals/bundle.js --format iife",
+    "build-watch": "rollup fundamentals/src/index.js --file fundamentals/bundle.js --format iife --watch",
     "format": "prettier --single-quote --print-width 100 --trailing-comma es5 --write $(git ls-files \"*.js\")"
   },
   "repository": {
