@@ -1,7 +1,7 @@
 const deleteShader = ({ gl, program, shader }) => {
   gl.detachShader(program, shader);
   gl.deleteShader(program, shader);
-}
+};
 
 const createShader = ({ gl, type, source }) => {
   const shader = gl.createShader(type);

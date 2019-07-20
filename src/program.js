@@ -1,4 +1,4 @@
-import { deleteShader } from './shader'
+import { deleteShader } from './shader';
 
 const validateProgram = ({ gl, program }) => {
   gl.validateProgram(program);
@@ -9,7 +9,7 @@ const validateProgram = ({ gl, program }) => {
     gl.deleteProgram(program);
     throw infoLog;
   }
-}
+};
 
 const createProgram = ({ gl, vertexShader, fragmentShader, validate }) => {
   const program = gl.createProgram();
