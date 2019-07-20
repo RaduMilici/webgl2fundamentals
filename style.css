@@ -1,10 +1,13 @@
-body {
+html, body {
     margin: 0;
     border: 0;
-    background-color: white;
+    padding: 0;
+    width: 100%;
+    height: 100%;
 }
 #webGl {
-    width: 100vw;
-    height: 100vh;
+    border: 1px solid black;
+    width: 100%;
+    height: 100%;
     display: block;
 }
