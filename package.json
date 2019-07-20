@@ -7,8 +7,7 @@
     "dev": "concurrently \"lite-server --baseDir=\"fundamentals\"\" \"npm run build-watch\"",
     "build": "rollup fundamentals/src/index.js --file fundamentals/bundle.js --format iife",
     "build-watch": "rollup fundamentals/src/index.js --file fundamentals/bundle.js --format iife --watch",
-    "format": "prettier --single-quote --print-width 100 --trailing-comma es5 --write $(git ls-files \"*.js\")",
-    "build-fundamentals": "node ./scripts/projects/fundamentals.js"
+    "format": "prettier --single-quote --print-width 100 --trailing-comma es5 --write $(git ls-files \"*.js\")"
   },
   "repository": {
     "type": "git",
@@ -22,11 +21,9 @@
   },
   "homepage": "https://github.com/RaduMilici/webgl2fundamentals#readme",
   "devDependencies": {
-    "browser-sync": "^2.26.7",
     "concurrently": "^4.0.1",
     "lite-server": "^2.4.0",
     "prettier": "^1.14.3",
-    "rollup": "^0.66.0",
-    "serve": "^11.1.0"
+    "rollup": "^0.66.0"
   }
 }
