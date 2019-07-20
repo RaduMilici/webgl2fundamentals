@@ -1,4 +1,9 @@
-const createShader = (gl, type, source) => {
+const deleteShader = ({ gl, program, shader }) => {
+  gl.detachShader(program, shader);
+  gl.deleteShader(program, shader);
+}
+
+const createShader = ({ gl, type, source }) => {
   const shader = gl.createShader(type);
 
   gl.shaderSource(shader, source);
@@ -8,12 +13,11 @@ const createShader = (gl, type, source) => {
 
   if (!success) {
     const infoLog = gl.getShaderInfoLog(shader);
-    console.error(infoLog);
     gl.deleteShader(shader);
-    return null;
+    throw infoLog;
   }
 
   return shader;
 };
 
-export { createShader };
+export { createShader, deleteShader };

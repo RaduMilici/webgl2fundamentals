@@ -1,4 +1,17 @@
-const createProgram = (gl, vertexShader, fragmentShader) => {
+import { deleteShader } from './shader'
+
+const validateProgram = ({ gl, program }) => {
+  gl.validateProgram(program);
+  const success = gl.getProgramParameter(program, gl.VALIDATE_STATUS);
+
+  if (!success) {
+    const infoLog = gl.getProgramInfoLog(program);
+    gl.deleteProgram(program);
+    throw infoLog;
+  }
+}
+
+const createProgram = ({ gl, vertexShader, fragmentShader, validate }) => {
   const program = gl.createProgram();
 
   gl.attachShader(program, vertexShader);
@@ -9,12 +22,18 @@ const createProgram = (gl, vertexShader, fragmentShader) => {
 
   if (!success) {
     const infoLog = gl.getProgramInfoLog(program);
-    console.error(infoLog);
     gl.deleteProgram(program);
-    return null;
+    throw infoLog;
   }
+
+  if (validate) {
+    validateProgram({ gl, program });
+  }
+
+  deleteShader({ gl, program, shader: fragmentShader });
+  deleteShader({ gl, program, shader: vertexShader });
 
   return program;
 };
 
-export  { createProgram };
+export default createProgram;
