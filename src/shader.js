@@ -1,19 +1,19 @@
-const deleteShader = ({ gl, program, shader }) => {
-  gl.detachShader(program, shader);
-  gl.deleteShader(shader);
+const deleteShader = ({ context, program, shader }) => {
+  context.detachShader(program, shader);
+  context.deleteShader(shader);
 };
 
-const createShader = ({ gl, type, source }) => {
-  const shader = gl.createShader(type);
+const createShader = ({ context, type, source }) => {
+  const shader = context.createShader(type);
 
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
+  context.shaderSource(shader, source);
+  context.compileShader(shader);
 
-  const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+  const success = context.getShaderParameter(shader, context.COMPILE_STATUS);
 
   if (!success) {
-    const infoLog = gl.getShaderInfoLog(shader);
-    gl.deleteShader(shader);
+    const infoLog = context.getShaderInfoLog(shader);
+    context.deleteShader(shader);
     throw infoLog;
   }
 

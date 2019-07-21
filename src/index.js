@@ -9,19 +9,19 @@ gl.setSize({ width: 500, height: 500 });
 gl.clear();
 
 const vertexShader = createShader({
-  gl: context,
+  context,
   type: context.VERTEX_SHADER,
   source: vertexShaderSource,
 });
 
 const fragmentShader = createShader({
-  gl: context,
+  context,
   type: context.FRAGMENT_SHADER,
   source: fragmentShaderSource,
 });
 
 const program = createProgram({
-  gl: context,
+  context,
   vertexShader,
   fragmentShader,
   validate: true,
@@ -38,7 +38,7 @@ context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
 context.bufferData(context.ARRAY_BUFFER, vertsArray, context.STATIC_DRAW);
 context.enableVertexAttribArray(aPositionLoc);
 
-const size = 2; // 2 components per iteration 
+const size = 2; // 2 components per iteration
 const type = context.FLOAT; // the data is 32bit floats
 const normalize = false; // don't normalize the data
 const stride = 0; // 0 means iterate size * sizeof(type) to get next index
@@ -69,5 +69,5 @@ const animate = () => {
   context.drawArrays(context.POINTS, 0, count);
   context.bindBuffer(context.ARRAY_BUFFER, null);
 };
-animate()
-//ßßsetInterval(animate, 1000);
+animate();
+context.useProgram(null);

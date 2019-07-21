@@ -48,60 +48,60 @@ void main() {
 }
 `;
 
-  const deleteShader = ({ gl, program, shader }) => {
-    gl.detachShader(program, shader);
-    gl.deleteShader(shader);
+  const deleteShader = ({ context, program, shader }) => {
+    context.detachShader(program, shader);
+    context.deleteShader(shader);
   };
 
-  const createShader = ({ gl, type, source }) => {
-    const shader = gl.createShader(type);
+  const createShader = ({ context, type, source }) => {
+    const shader = context.createShader(type);
 
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
+    context.shaderSource(shader, source);
+    context.compileShader(shader);
 
-    const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    const success = context.getShaderParameter(shader, context.COMPILE_STATUS);
 
     if (!success) {
-      const infoLog = gl.getShaderInfoLog(shader);
-      gl.deleteShader(shader);
+      const infoLog = context.getShaderInfoLog(shader);
+      context.deleteShader(shader);
       throw infoLog;
     }
 
     return shader;
   };
 
-  const validateProgram = ({ gl, program }) => {
-    gl.validateProgram(program);
-    const success = gl.getProgramParameter(program, gl.VALIDATE_STATUS);
+  const validateProgram = ({ context, program }) => {
+    context.validateProgram(program);
+    const success = context.getProgramParameter(program, context.VALIDATE_STATUS);
 
     if (!success) {
-      const infoLog = gl.getProgramInfoLog(program);
-      gl.deleteProgram(program);
+      const infoLog = context.getProgramInfoLog(program);
+      context.deleteProgram(program);
       throw infoLog;
     }
   };
 
-  const createProgram = ({ gl, vertexShader, fragmentShader, validate }) => {
-    const program = gl.createProgram();
+  const createProgram = ({ context, vertexShader, fragmentShader, validate }) => {
+    const program = context.createProgram();
 
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
+    context.attachShader(program, vertexShader);
+    context.attachShader(program, fragmentShader);
+    context.linkProgram(program);
 
-    const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+    const success = context.getProgramParameter(program, context.LINK_STATUS);
 
     if (!success) {
-      const infoLog = gl.getProgramInfoLog(program);
-      gl.deleteProgram(program);
+      const infoLog = context.getProgramInfoLog(program);
+      context.deleteProgram(program);
       throw infoLog;
     }
 
     if (validate) {
-      validateProgram({ gl, program });
+      validateProgram({ context, program });
     }
 
-    deleteShader({ gl, program, shader: fragmentShader });
-    deleteShader({ gl, program, shader: vertexShader });
+    deleteShader({ context, program, shader: fragmentShader });
+    deleteShader({ context, program, shader: vertexShader });
 
     return program;
   };
@@ -112,19 +112,19 @@ void main() {
   gl.clear();
 
   const vertexShader = createShader({
-    gl: context,
+    context,
     type: context.VERTEX_SHADER,
     source: vertexShaderSource,
   });
 
   const fragmentShader = createShader({
-    gl: context,
+    context,
     type: context.FRAGMENT_SHADER,
     source: fragmentShaderSource,
   });
 
   const program = createProgram({
-    gl: context,
+    context,
     vertexShader,
     fragmentShader,
     validate: true,
@@ -141,7 +141,7 @@ void main() {
   context.bufferData(context.ARRAY_BUFFER, vertsArray, context.STATIC_DRAW);
   context.enableVertexAttribArray(aPositionLoc);
 
-  const size = 2; // 2 components per iteration 
+  const size = 2; // 2 components per iteration
   const type = context.FLOAT; // the data is 32bit floats
   const normalize = false; // don't normalize the data
   const stride = 0; // 0 means iterate size * sizeof(type) to get next index
@@ -173,6 +173,6 @@ void main() {
     context.bindBuffer(context.ARRAY_BUFFER, null);
   };
   animate();
-  //ßßsetInterval(animate, 1000);
+  context.useProgram(null);
 
 }());

@@ -1,37 +1,37 @@
 import { deleteShader } from './shader';
 
-const validateProgram = ({ gl, program }) => {
-  gl.validateProgram(program);
-  const success = gl.getProgramParameter(program, gl.VALIDATE_STATUS);
+const validateProgram = ({ context, program }) => {
+  context.validateProgram(program);
+  const success = context.getProgramParameter(program, context.VALIDATE_STATUS);
 
   if (!success) {
-    const infoLog = gl.getProgramInfoLog(program);
-    gl.deleteProgram(program);
+    const infoLog = context.getProgramInfoLog(program);
+    context.deleteProgram(program);
     throw infoLog;
   }
 };
 
-const createProgram = ({ gl, vertexShader, fragmentShader, validate }) => {
-  const program = gl.createProgram();
+const createProgram = ({ context, vertexShader, fragmentShader, validate }) => {
+  const program = context.createProgram();
 
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
+  context.attachShader(program, vertexShader);
+  context.attachShader(program, fragmentShader);
+  context.linkProgram(program);
 
-  const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+  const success = context.getProgramParameter(program, context.LINK_STATUS);
 
   if (!success) {
-    const infoLog = gl.getProgramInfoLog(program);
-    gl.deleteProgram(program);
+    const infoLog = context.getProgramInfoLog(program);
+    context.deleteProgram(program);
     throw infoLog;
   }
 
   if (validate) {
-    validateProgram({ gl, program });
+    validateProgram({ context, program });
   }
 
-  deleteShader({ gl, program, shader: fragmentShader });
-  deleteShader({ gl, program, shader: vertexShader });
+  deleteShader({ context, program, shader: fragmentShader });
+  deleteShader({ context, program, shader: vertexShader });
 
   return program;
 };
