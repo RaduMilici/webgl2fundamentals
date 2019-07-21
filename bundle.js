@@ -1,4 +1,4 @@
-(function () {
+(function() {
   'use strict';
 
   class Gl {
@@ -30,23 +30,11 @@
     }
   }
 
-  const vertexShaderSource = `#version 300 es
-in vec3 a_position;
-uniform float uPointSize;
+  var fragmentShaderSource =
+    '#version 300 es\nprecision mediump float;out vec4 color;void main(){color=vec4(0,0,1,1);}';
 
-void main() {
-  gl_PointSize = uPointSize;
-  gl_Position = vec4(a_position, 1.0);
-}`;
-
-  const fragmentShaderSource = `#version 300 es
-precision mediump float;
-out vec4 color;
-
-void main() {
-  color = vec4(0, 0, 1, 1);
-}
-`;
+  var vertexShaderSource =
+    '#version 300 es\nin vec3 a_position;uniform float uPointSize;void main(){gl_PointSize=uPointSize;gl_Position=vec4(a_position,1.0);}';
 
   const deleteShader = ({ context, program, shader }) => {
     context.detachShader(program, shader);
@@ -174,5 +162,4 @@ void main() {
   };
   animate();
   context.useProgram(null);
-
-}());
+})();

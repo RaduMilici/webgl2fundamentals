@@ -1,5 +1,6 @@
 import Gl from './gl';
-import { vertexShaderSource, fragmentShaderSource } from './shadersSources';
+import fragmentShaderSource from './shaders/fragmentShader.glsl';
+import vertexShaderSource from './shaders/vertexShader.glsl';
 import { createShader } from './shader';
 import createProgram from './program';
 
