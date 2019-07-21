@@ -4,11 +4,11 @@ module.exports = {
   input: 'src/index.js',
   output: {
     file: 'bundle.js',
-    format: 'iife'
+    format: 'iife',
   },
   plugins: [
     glsl({
-        include: 'src/**/*.glsl',
-    })
-  ]
+      include: 'src/**/*.glsl',
+    }),
+  ],
 };

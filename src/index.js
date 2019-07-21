@@ -3,6 +3,7 @@ import fragmentShaderSource from './shaders/fragmentShader.glsl';
 import vertexShaderSource from './shaders/vertexShader.glsl';
 import { createShader } from './shader';
 import createProgram from './program';
+import trianglePoints from './const/trianglePoints';
 
 const gl = new Gl({ canvasSelector: '#webGl' });
 const { context } = gl;
@@ -30,6 +31,7 @@ const program = createProgram({
 
 context.useProgram(program);
 
+// POINTS
 const aPositionLoc = context.getAttribLocation(program, 'a_position');
 const uPointSizeLoc = context.getUniformLocation(program, 'uPointSize');
 const vertsArray = new Float32Array([0, 0, 0.5, 0.5]);
@@ -48,8 +50,17 @@ context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset)
 context.bindBuffer(context.ARRAY_BUFFER, null);
 context.uniform1f(uPointSizeLoc, 10);
 context.drawArrays(context.POINTS, 0, 2);
-//context.useProgram(null);
 
+// TRIANGLE
+const trangleVertsBuffer = context.createBuffer();
+const trangleVertsArray = new Float32Array(trianglePoints);
+context.bindBuffer(context.ARRAY_BUFFER, trangleVertsBuffer);
+context.bufferData(context.ARRAY_BUFFER, trangleVertsArray, context.STATIC_DRAW);
+context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
+context.drawArrays(context.TRIANGLES, 0, 3);
+context.useProgram(null);
+
+/*
 function random(min = 0, max = 1) {
   return Math.random() * (max - min) + min;
 }
@@ -71,4 +82,4 @@ const animate = () => {
   context.bindBuffer(context.ARRAY_BUFFER, null);
 };
 animate();
-context.useProgram(null);
+context.useProgram(null);*/

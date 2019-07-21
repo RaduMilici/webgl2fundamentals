@@ -11,7 +11,7 @@ const validateProgram = ({ context, program }) => {
   }
 };
 
-const createProgram = ({ context, vertexShader, fragmentShader, validate }) => {
+const createProgram = ({ context, vertexShader, fragmentShader, validate = false }) => {
   const program = context.createProgram();
 
   context.attachShader(program, vertexShader);

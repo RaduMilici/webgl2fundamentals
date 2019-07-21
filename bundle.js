@@ -31,10 +31,10 @@
   }
 
   var fragmentShaderSource =
-    '#version 300 es\nprecision mediump float;out vec4 color;void main(){color=vec4(0,0,1,1);}';
+    '#version 300 es\nprecision mediump float;out vec4 color;void main(){color=vec4(0.,0.,1.,1.);}';
 
   var vertexShaderSource =
-    '#version 300 es\nin vec3 a_position;uniform float uPointSize;void main(){gl_PointSize=uPointSize;gl_Position=vec4(a_position,1.0);}';
+    '#version 300 es\nin vec2 a_position;uniform float uPointSize;void main(){gl_PointSize=uPointSize;gl_Position=vec4(a_position,0.,1.);}';
 
   const deleteShader = ({ context, program, shader }) => {
     context.detachShader(program, shader);
@@ -69,7 +69,7 @@
     }
   };
 
-  const createProgram = ({ context, vertexShader, fragmentShader, validate }) => {
+  const createProgram = ({ context, vertexShader, fragmentShader, validate = false }) => {
     const program = context.createProgram();
 
     context.attachShader(program, vertexShader);
@@ -93,6 +93,10 @@
 
     return program;
   };
+
+  const trianglePoints = [-1, 1, 1, 1, 0, -1];
+
+  var trianglePoints$1 = new Float32Array(trianglePoints);
 
   const gl = new Gl({ canvasSelector: '#webGl' });
   const { context } = gl;
@@ -120,6 +124,7 @@
 
   context.useProgram(program);
 
+  // POINTS
   const aPositionLoc = context.getAttribLocation(program, 'a_position');
   const uPointSizeLoc = context.getUniformLocation(program, 'uPointSize');
   const vertsArray = new Float32Array([0, 0, 0.5, 0.5]);
@@ -138,8 +143,17 @@
   context.bindBuffer(context.ARRAY_BUFFER, null);
   context.uniform1f(uPointSizeLoc, 10);
   context.drawArrays(context.POINTS, 0, 2);
-  //context.useProgram(null);
 
+  // TRIANGLE
+  const trangleVertsBuffer = context.createBuffer();
+  const trangleVertsArray = new Float32Array(trianglePoints$1);
+  context.bindBuffer(context.ARRAY_BUFFER, trangleVertsBuffer);
+  context.bufferData(context.ARRAY_BUFFER, trangleVertsArray, context.STATIC_DRAW);
+  context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
+  context.drawArrays(context.TRIANGLES, 0, 3);
+  context.useProgram(null);
+
+  /*
   function random(min = 0, max = 1) {
     return Math.random() * (max - min) + min;
   }
@@ -161,5 +175,5 @@
     context.bindBuffer(context.ARRAY_BUFFER, null);
   };
   animate();
-  context.useProgram(null);
+  context.useProgram(null);*/
 })();
