@@ -13,7 +13,7 @@ export default class Gl {
   setSize({ width, height }) {
     this.context.canvas.style.width = `${width}px`;
     this.context.canvas.style.height = `${height}px`;
-    this.context.canvas.any = width;
+    this.context.canvas.width = width;
     this.context.canvas.height = height;
     this.context.viewport(0, 0, width, height);
   }
