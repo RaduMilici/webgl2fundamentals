@@ -30,67 +30,97 @@
     }
   }
 
-  var fragmentShaderSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
+  var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vertexShaderSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform float uPointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=uPointSize;gl_Position=vec4(a_position,0.,1.);}";
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform float uPointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=uPointSize;gl_Position=vec4(a_position,0.,1.);}";
 
-  const deleteShader = ({ context, program, shader }) => {
-    context.detachShader(program, shader);
-    context.deleteShader(shader);
-  };
-
-  const createShader = ({ context, type, source }) => {
-    const shader = context.createShader(type);
-
-    context.shaderSource(shader, source);
-    context.compileShader(shader);
-
-    const success = context.getShaderParameter(shader, context.COMPILE_STATUS);
-
-    if (!success) {
-      const infoLog = context.getShaderInfoLog(shader);
-      context.deleteShader(shader);
-      throw infoLog;
+  class Shader {
+    constructor({ context, type, source }) {
+      this.context = context;
+      this.source = source;
+      this.gl_shader = context.createShader(type);
+      this.context.shaderSource(this.gl_shader, source);
+      this.context.compileShader(this.gl_shader);
+      this.verify();  
     }
 
-    return shader;
-  };
-
-  const validateProgram = ({ context, program }) => {
-    context.validateProgram(program);
-    const success = context.getProgramParameter(program, context.VALIDATE_STATUS);
-
-    if (!success) {
-      const infoLog = context.getProgramInfoLog(program);
-      context.deleteProgram(program);
-      throw infoLog;
-    }
-  };
-
-  const createProgram = ({ context, vertexShader, fragmentShader, validate = false }) => {
-    const program = context.createProgram();
-
-    context.attachShader(program, vertexShader);
-    context.attachShader(program, fragmentShader);
-    context.linkProgram(program);
-
-    const success = context.getProgramParameter(program, context.LINK_STATUS);
-
-    if (!success) {
-      const infoLog = context.getProgramInfoLog(program);
-      context.deleteProgram(program);
-      throw infoLog;
+    delete(program) {
+      this.context.detachShader(program, this.gl_shader);
+      this.context.deleteShader(this.gl_shader);
     }
 
-    if (validate) {
-      validateProgram({ context, program });
+    verify() {
+      const success = this.context.getShaderParameter(this.gl_shader, this.context.COMPILE_STATUS);
+    
+      if (!success) {
+        const infoLog = this.context.getShaderInfoLog(this.gl_shader);
+        this.context.deleteShader(this.gl_shader);
+        throw infoLog;
+      }
+    }
+  }
+
+  class VertexShader extends Shader {
+    constructor({ context, source }) {
+      super({ 
+        context, 
+        source,
+        type: context.VERTEX_SHADER
+      });
+    }
+  }
+
+  class FragmentShader extends Shader {
+    constructor({ context, source }) {
+      super({ 
+        context, 
+        source,
+        type: context.FRAGMENT_SHADER
+      });
+    }
+  }
+
+  class Program {
+    constructor({ context, vertexShader, fragmentShader, debug = false }) {
+      this.context = context;
+      this.gl_program = context.createProgram();
+      this.debug = debug;
+      this.attachShaders({ vertexShader, fragmentShader });
+      context.linkProgram(this.gl_program);
+      this.verify();
+      if (this.debug) {
+        this.validate();
+      }
+      vertexShader.delete(this.gl_program);
+      fragmentShader.delete(this.gl_program);
     }
 
-    deleteShader({ context, program, shader: fragmentShader });
-    deleteShader({ context, program, shader: vertexShader });
+    attachShaders({ vertexShader, fragmentShader }) {
+      this.context.attachShader(this.gl_program, vertexShader.gl_shader);
+      this.context.attachShader(this.gl_program, fragmentShader.gl_shader);
+    }
 
-    return program;
-  };
+    verify() {
+      const success = this.context.getProgramParameter(this.gl_program, this.context.LINK_STATUS);
+
+      if (!success) {
+        const infoLog = this.context.getProgramInfoLog(this.gl_program);
+        this.context.deleteProgram(this.gl_program);
+        throw infoLog;
+      }
+    }
+
+    validate() {
+      this.context.validateProgram(this.gl_program);
+      const success = this.context.getProgramParameter(this.gl_program, this.context.VALIDATE_STATUS);
+
+      if (!success) {
+        const infoLog = this.context.getProgramInfoLog(this.gl_program);
+        this.context.deleteProgram(this.gl_program);
+        throw infoLog;
+      }
+    }
+  }
 
   // prettier-ignore
   var trianglePoints = new Float32Array([
@@ -103,35 +133,22 @@
   const gl = new Gl({ canvasSelector: '#webGl' });
   const { context } = gl;
   gl.setSize({ width: 500, height: 500 });
+  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
   gl.clear();
 
-  const vertexShader = createShader({
-    context,
-    type: context.VERTEX_SHADER,
-    source: vertexShaderSource,
-  });
+  const vertexShader = new VertexShader({ context, source: vsSource });
+  const fragmentShader = new FragmentShader({ context, source: fsSource });
+  const program = new Program({ context, vertexShader, fragmentShader, debug: true });
 
-  const fragmentShader = createShader({
-    context,
-    type: context.FRAGMENT_SHADER,
-    source: fragmentShaderSource,
-  });
-
-  const program = createProgram({
-    context,
-    vertexShader,
-    fragmentShader,
-    validate: true,
-  });
-
-  const aPositionLoc = context.getAttribLocation(program, 'a_position');
-  const aVertColorLoc = context.getAttribLocation(program, 'a_vertColor');
-  const uPointSizeLoc = context.getUniformLocation(program, 'uPointSize');
-
+  const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
+  const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
+  const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'uPointSize');
   const vertsBuffer = context.createBuffer();
 
   context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
   context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
+  context.useProgram(program.gl_program);
+  context.uniform1f(uPointSizeLoc, 30);
 
   const size = 2; // components per iteration
   const colorSize = 3;
@@ -140,12 +157,6 @@
   const stride = 5 * Float32Array.BYTES_PER_ELEMENT; // 0 means iterate size * sizeof(type) to get next index
   const offset = 0; // start at the beginning of the buffer
   const colorOffset = 2 * Float32Array.BYTES_PER_ELEMENT;
-  context.useProgram(program);
-  context.uniform1f(uPointSizeLoc, 10);
-
-  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
-  gl.clear();
-
   // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
   context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
   context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);

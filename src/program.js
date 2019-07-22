@@ -1,39 +1,43 @@
-import { deleteShader } from './shader';
-
-const validateProgram = ({ context, program }) => {
-  context.validateProgram(program);
-  const success = context.getProgramParameter(program, context.VALIDATE_STATUS);
-
-  if (!success) {
-    const infoLog = context.getProgramInfoLog(program);
-    context.deleteProgram(program);
-    throw infoLog;
-  }
-};
-
-const createProgram = ({ context, vertexShader, fragmentShader, validate = false }) => {
-  const program = context.createProgram();
-
-  context.attachShader(program, vertexShader);
-  context.attachShader(program, fragmentShader);
-  context.linkProgram(program);
-
-  const success = context.getProgramParameter(program, context.LINK_STATUS);
-
-  if (!success) {
-    const infoLog = context.getProgramInfoLog(program);
-    context.deleteProgram(program);
-    throw infoLog;
+class Program {
+  constructor({ context, vertexShader, fragmentShader, debug = false }) {
+    this.context = context;
+    this.gl_program = context.createProgram();
+    this.debug = debug;
+    this.attachShaders({ vertexShader, fragmentShader });
+    context.linkProgram(this.gl_program);
+    this.verify();
+    if (this.debug) {
+      this.validate();
+    }
+    vertexShader.delete(this.gl_program);
+    fragmentShader.delete(this.gl_program);
   }
 
-  if (validate) {
-    validateProgram({ context, program });
+  attachShaders({ vertexShader, fragmentShader }) {
+    this.context.attachShader(this.gl_program, vertexShader.gl_shader);
+    this.context.attachShader(this.gl_program, fragmentShader.gl_shader);
   }
 
-  deleteShader({ context, program, shader: fragmentShader });
-  deleteShader({ context, program, shader: vertexShader });
+  verify() {
+    const success = this.context.getProgramParameter(this.gl_program, this.context.LINK_STATUS);
 
-  return program;
-};
+    if (!success) {
+      const infoLog = this.context.getProgramInfoLog(this.gl_program);
+      this.context.deleteProgram(this.gl_program);
+      throw infoLog;
+    }
+  }
 
-export default createProgram;
+  validate() {
+    this.context.validateProgram(this.gl_program);
+    const success = this.context.getProgramParameter(this.gl_program, this.context.VALIDATE_STATUS);
+
+    if (!success) {
+      const infoLog = this.context.getProgramInfoLog(this.gl_program);
+      this.context.deleteProgram(this.gl_program);
+      throw infoLog;
+    }
+  }
+}
+
+export default Program;
