@@ -1,6 +1,6 @@
 class GlSlider extends HTMLElement {
   constructor() {
-    super();    
+    super();
     const shadow = this.attachShadow({ mode: 'open' });
     this.label = document.createElement('label');
     this.label.setAttribute('class', 'label');
@@ -11,7 +11,7 @@ class GlSlider extends HTMLElement {
 
     this.input.addEventListener('input', event => {
       event.stopPropagation();
-      const { value } = event.target; 
+      const { value } = event.target;
       this.span.textContent = value;
       this.dispatchEvent(new CustomEvent('input', { detail: value }));
     });
@@ -22,13 +22,19 @@ class GlSlider extends HTMLElement {
     shadow.appendChild(this.label);
   }
 
-  makeInput() {    
-    const max = this.getAttribute('max');
+  get value() {
+    return this.input.value;
+  }
+
+  makeInput() {
+    const max = parseFloat(this.getAttribute('max'));
+    const min = parseFloat(this.getAttribute('min'));
     const input = document.createElement('input');
     input.type = 'range';
-    input.value = max / 2;
-    input.setAttribute('min', this.getAttribute('min'));
+    input.setAttribute('step', this.getAttribute('step'));
+    input.setAttribute('min', min);
     input.setAttribute('max', max);
+    input.value = (min + max) / 2;
     return input;
   }
 

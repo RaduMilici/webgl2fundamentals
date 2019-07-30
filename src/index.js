@@ -22,6 +22,7 @@ const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position')
 const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
 const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
 const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
+const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
 const vertsBuffer = context.createBuffer();
 
 context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
@@ -45,16 +46,34 @@ context.enableVertexAttribArray(aPositionLoc);
 context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
 context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);
 
-context.drawArrays(context.TRIANGLES, 0, 3);
-context.drawArrays(context.POINTS, 0, 3);
-context.bindBuffer(context.ARRAY_BUFFER, null);
+//context.bindBuffer(context.ARRAY_BUFFER, null);
+
+const translation = new Float32Array([0, 0]);
+
+const drawScene = () => {
+  gl.clear();
+  context.uniform2fv(uTranslationLoc, translation);
+  context.useProgram(program.gl_program);
+  context.drawArrays(context.TRIANGLES, 0, 3);
+  context.drawArrays(context.POINTS, 0, 3);
+};
+
+// UI
 
 const xSlider = document.getElementById('x-slider');
 const ySlider = document.getElementById('y-slider');
+
 xSlider.addEventListener('input', ({ detail }) => {
-  console.log(`X: ${detail}`);
+  translation[0] = detail;
+  drawScene();
 });
 
 ySlider.addEventListener('input', ({ detail }) => {
-  console.log(`Y: ${detail}`);
+  translation[1] = detail;
+  drawScene();
 });
+
+translation[0] = xSlider.value;
+translation[1] = ySlider.value;
+
+drawScene();

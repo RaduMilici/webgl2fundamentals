@@ -3,7 +3,7 @@
 
   class GlSlider extends HTMLElement {
     constructor() {
-      super();    
+      super();
       const shadow = this.attachShadow({ mode: 'open' });
       this.label = document.createElement('label');
       this.label.setAttribute('class', 'label');
@@ -14,7 +14,7 @@
 
       this.input.addEventListener('input', event => {
         event.stopPropagation();
-        const { value } = event.target; 
+        const { value } = event.target;
         this.span.textContent = value;
         this.dispatchEvent(new CustomEvent('input', { detail: value }));
       });
@@ -25,13 +25,19 @@
       shadow.appendChild(this.label);
     }
 
-    makeInput() {    
-      const max = this.getAttribute('max');
+    get value() {
+      return this.input.value;
+    }
+
+    makeInput() {
+      const max = parseFloat(this.getAttribute('max'));
+      const min = parseFloat(this.getAttribute('min'));
       const input = document.createElement('input');
       input.type = 'range';
-      input.value = max / 2;
-      input.setAttribute('min', this.getAttribute('min'));
+      input.setAttribute('step', this.getAttribute('step'));
+      input.setAttribute('min', min);
       input.setAttribute('max', max);
+      input.value = (min + max) / 2;
       return input;
     }
 
@@ -80,7 +86,7 @@
 
   var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform float u_pointSize;out vec3 fragColor;vec2 get2dPosition(){vec2 zeroToOne=a_position/u_resolution;return zeroToOne;}void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;gl_Position=vec4(a_position,0.,1.);}";
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;gl_Position=vec4(a_position+u_translation,0.,1.);}";
 
   class Shader {
     constructor({ context, type, source }) {
@@ -89,7 +95,7 @@
       this.gl_shader = context.createShader(type);
       this.context.shaderSource(this.gl_shader, source);
       this.context.compileShader(this.gl_shader);
-      this.verify();  
+      this.verify();
     }
 
     delete(program) {
@@ -99,7 +105,7 @@
 
     verify() {
       const success = this.context.getShaderParameter(this.gl_shader, this.context.COMPILE_STATUS);
-    
+
       if (!success) {
         const infoLog = this.context.getShaderInfoLog(this.gl_shader);
         this.context.deleteShader(this.gl_shader);
@@ -110,20 +116,20 @@
 
   class VertexShader extends Shader {
     constructor({ context, source }) {
-      super({ 
-        context, 
+      super({
+        context,
         source,
-        type: context.VERTEX_SHADER
+        type: context.VERTEX_SHADER,
       });
     }
   }
 
   class FragmentShader extends Shader {
     constructor({ context, source }) {
-      super({ 
-        context, 
+      super({
+        context,
         source,
-        type: context.FRAGMENT_SHADER
+        type: context.FRAGMENT_SHADER,
       });
     }
   }
@@ -194,6 +200,7 @@
   const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
   const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
   const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
+  const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
   const vertsBuffer = context.createBuffer();
 
   context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
@@ -217,18 +224,36 @@
   context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
   context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);
 
-  context.drawArrays(context.TRIANGLES, 0, 3);
-  context.drawArrays(context.POINTS, 0, 3);
-  context.bindBuffer(context.ARRAY_BUFFER, null);
+  //context.bindBuffer(context.ARRAY_BUFFER, null);
+
+  const translation = new Float32Array([0, 0]);
+
+  const drawScene = () => {
+    gl.clear();
+    context.uniform2fv(uTranslationLoc, translation);
+    context.useProgram(program.gl_program);
+    context.drawArrays(context.TRIANGLES, 0, 3);
+    context.drawArrays(context.POINTS, 0, 3);
+  };
+
+  // UI
 
   const xSlider = document.getElementById('x-slider');
   const ySlider = document.getElementById('y-slider');
+
   xSlider.addEventListener('input', ({ detail }) => {
-    console.log(`X: ${detail}`);
+    translation[0] = detail;
+    drawScene();
   });
 
   ySlider.addEventListener('input', ({ detail }) => {
-    console.log(`Y: ${detail}`);
+    translation[1] = detail;
+    drawScene();
   });
+
+  translation[0] = xSlider.value;
+  translation[1] = ySlider.value;
+
+  drawScene();
 
 }());
