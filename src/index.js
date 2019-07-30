@@ -1,3 +1,4 @@
+import './ui/index';
 import Gl from './gl';
 import fsSource from './shaders/fragmentShader.glsl';
 import vsSource from './shaders/vertexShader.glsl';
