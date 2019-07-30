@@ -32,7 +32,7 @@
 
   var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform float uPointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=uPointSize;gl_Position=vec4(a_position,0.,1.);}";
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform float u_pointSize;out vec3 fragColor;vec2 get2dPosition(){vec2 zeroToOne=a_position/u_resolution;return zeroToOne;}void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;gl_Position=vec4(a_position,0.,1.);}";
 
   class Shader {
     constructor({ context, type, source }) {
@@ -125,14 +125,16 @@
   // prettier-ignore
   var trianglePoints = new Float32Array([
     // X, Y      R, G, B
-    -1, -1,      1, 0, 0,
-     0,  1,      0, 1, 0,
+     -1,  0,      1, 0, 0,
+     1,  1,      0, 1, 0,
      1, -1,      0, 0, 1
   ]);
 
   const gl = new Gl({ canvasSelector: '#webGl' });
   const { context } = gl;
-  gl.setSize({ width: 500, height: 500 });
+  const [width, height] = [500, 500];
+
+  gl.setSize({ width, height });
   gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
   gl.clear();
 
@@ -142,26 +144,30 @@
 
   const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
   const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
-  const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'uPointSize');
+  const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
+  const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
   const vertsBuffer = context.createBuffer();
 
   context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
   context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
   context.useProgram(program.gl_program);
   context.uniform1f(uPointSizeLoc, 30);
+  context.uniform2f(uResolutionLoc, width, height);
 
-  const size = 2; // components per iteration
-  const colorSize = 3;
+  const vao = context.createVertexArray();
+  context.bindVertexArray(vao);
+
+  const size = 2; // x, y
+  const colorSize = 3; // r, g, b
   const type = context.FLOAT; // the data is 32bit floats
   const normalize = context.FALSE; // don't normalize the data
   const stride = 5 * Float32Array.BYTES_PER_ELEMENT; // 0 means iterate size * sizeof(type) to get next index
   const offset = 0; // start at the beginning of the buffer
-  const colorOffset = 2 * Float32Array.BYTES_PER_ELEMENT;
-  // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
-  context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
-  context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);
+  const colorOffset = 2 * Float32Array.BYTES_PER_ELEMENT; // skip positions
   context.enableVertexAttribArray(aVertColorLoc);
   context.enableVertexAttribArray(aPositionLoc);
+  context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
+  context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);
 
   context.drawArrays(context.TRIANGLES, 0, 3);
   context.drawArrays(context.POINTS, 0, 3);
