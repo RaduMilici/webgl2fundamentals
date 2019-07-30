@@ -13,7 +13,10 @@
       this.span.textContent = this.input.value;
 
       this.input.addEventListener('input', event => {
-        this.span.textContent = event.target.value;
+        event.stopPropagation();
+        const { value } = event.target; 
+        this.span.textContent = value;
+        this.dispatchEvent(new CustomEvent('input', { detail: value }));
       });
 
       this.label.appendChild(this.input);
@@ -22,7 +25,7 @@
       shadow.appendChild(this.label);
     }
 
-    makeInput() {
+    makeInput() {    
       const max = this.getAttribute('max');
       const input = document.createElement('input');
       input.type = 'range';
@@ -217,5 +220,10 @@
   context.drawArrays(context.TRIANGLES, 0, 3);
   context.drawArrays(context.POINTS, 0, 3);
   context.bindBuffer(context.ARRAY_BUFFER, null);
+
+  const xSlider = document.getElementById('x-slider');
+  xSlider.addEventListener('input', (event) => {
+    console.log(event.detail);
+  });
 
 }());

@@ -10,7 +10,10 @@ class GlSlider extends HTMLElement {
     this.span.textContent = this.input.value;
 
     this.input.addEventListener('input', event => {
-      this.span.textContent = event.target.value;
+      event.stopPropagation();
+      const { value } = event.target; 
+      this.span.textContent = value;
+      this.dispatchEvent(new CustomEvent('input', { detail: value }));
     });
 
     this.label.appendChild(this.input);
@@ -19,7 +22,7 @@ class GlSlider extends HTMLElement {
     shadow.appendChild(this.label);
   }
 
-  makeInput() {
+  makeInput() {    
     const max = this.getAttribute('max');
     const input = document.createElement('input');
     input.type = 'range';

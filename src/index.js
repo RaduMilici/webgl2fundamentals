@@ -48,3 +48,8 @@ context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, c
 context.drawArrays(context.TRIANGLES, 0, 3);
 context.drawArrays(context.POINTS, 0, 3);
 context.bindBuffer(context.ARRAY_BUFFER, null);
+
+const xSlider = document.getElementById('x-slider');
+xSlider.addEventListener('input', (event) => {
+  console.log(event.detail);
+});
