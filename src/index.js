@@ -50,6 +50,11 @@ context.drawArrays(context.POINTS, 0, 3);
 context.bindBuffer(context.ARRAY_BUFFER, null);
 
 const xSlider = document.getElementById('x-slider');
-xSlider.addEventListener('input', (event) => {
-  console.log(event.detail);
+const ySlider = document.getElementById('y-slider');
+xSlider.addEventListener('input', ({ detail }) => {
+  console.log(`X: ${detail}`);
+});
+
+ySlider.addEventListener('input', ({ detail }) => {
+  console.log(`Y: ${detail}`);
 });
