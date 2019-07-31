@@ -1,4 +1,4 @@
-(function () {
+(function() {
   'use strict';
 
   class GlSlider extends HTMLElement {
@@ -6,8 +6,9 @@
       super();
       const shadow = this.attachShadow({ mode: 'open' });
       this.label = document.createElement('label');
-      this.label.setAttribute('class', 'label');
+      this.label.setAttribute('id', 'label');
       this.span = document.createElement('span');
+      this.span.setAttribute('id', 'value');
       this.input = this.makeInput();
       this.label.innerHTML = this.getAttribute('label');
       this.span.textContent = this.input.value;
@@ -42,6 +43,7 @@
       const max = parseFloat(this.getAttribute('max'));
       const min = parseFloat(this.getAttribute('min'));
       const input = document.createElement('input');
+      input.setAttribute('id', 'slider');
       input.type = 'range';
       input.setAttribute('step', this.getAttribute('step'));
       input.setAttribute('min', min);
@@ -53,11 +55,17 @@
     makeStyle() {
       const style = document.createElement('style');
       style.textContent = `
-      .label {
+      #label {
         background-color: black;
         color: white;
+        display: inline-block;
+        padding: 5px;
+        font-family: sans-serif;
       }
 
+      #slider {
+        margin: 0 20px;
+      }
     `;
       return style;
     }
@@ -94,9 +102,11 @@
     }
   }
 
-  var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
+  var fsSource =
+    '#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}';
 
-  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
+  var vsSource =
+    '#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}';
 
   class Shader {
     constructor({ context, type, source }) {
@@ -176,7 +186,10 @@
 
     validate() {
       this.context.validateProgram(this.gl_program);
-      const success = this.context.getProgramParameter(this.gl_program, this.context.VALIDATE_STATUS);
+      const success = this.context.getProgramParameter(
+        this.gl_program,
+        this.context.VALIDATE_STATUS
+      );
 
       if (!success) {
         const infoLog = this.context.getProgramInfoLog(this.gl_program);
@@ -297,5 +310,4 @@
   rotate({ detail: rotSlider.value });
 
   drawScene();
-
-}());
+})();
