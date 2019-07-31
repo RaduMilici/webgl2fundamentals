@@ -4,9 +4,7 @@
   class GlSlider extends HTMLElement {
     constructor() {
       super();
-      const shadow = this.attachShadow({
-        mode: 'open'
-      });
+      const shadow = this.attachShadow({ mode: 'open' });
       this.label = document.createElement('label');
       this.label.setAttribute('class', 'label');
       this.span = document.createElement('span');
@@ -16,13 +14,8 @@
 
       this.input.addEventListener('input', event => {
         event.stopPropagation();
-        const {
-          value
-        } = event.target;
-        this.span.textContent = value;
-        this.dispatchEvent(new CustomEvent('input', {
-          detail: value
-        }));
+        const { value } = event.target;
+        this.setValue(value);
       });
 
       this.label.appendChild(this.input);
@@ -33,6 +26,16 @@
 
     get value() {
       return this.input.value;
+    }
+
+    set value(value) {
+      this.setValue(value);
+    }
+
+    setValue(value) {
+      this.input.value = value;
+      this.span.textContent = value;
+      this.dispatchEvent(new CustomEvent('input', { detail: value }));
     }
 
     makeInput() {
@@ -54,6 +57,7 @@
         background-color: black;
         color: white;
       }
+
     `;
       return style;
     }
@@ -62,9 +66,7 @@
   customElements.define('gl-slider', GlSlider);
 
   class Gl {
-    constructor({
-      canvasSelector
-    }) {
+    constructor({ canvasSelector }) {
       this.canvas = document.querySelector(canvasSelector);
 
       if (!this.canvas instanceof HTMLCanvasElement) {
@@ -72,18 +74,10 @@
       }
 
       this.context = this.canvas.getContext('webgl2');
-      this.setClearColor({
-        r: 1,
-        g: 1,
-        b: 1,
-        a: 1
-      });
+      this.setClearColor({ r: 1, g: 1, b: 1, a: 1 });
     }
 
-    setSize({
-      width,
-      height
-    }) {
+    setSize({ width, height }) {
       this.context.canvas.style.width = `${width}px`;
       this.context.canvas.style.height = `${height}px`;
       this.context.canvas.width = width;
@@ -91,12 +85,7 @@
       this.context.viewport(0, 0, width, height);
     }
 
-    setClearColor({
-      r,
-      g,
-      b,
-      a
-    }) {
+    setClearColor({ r, g, b, a }) {
       this.context.clearColor(r, g, b, a);
     }
 
@@ -107,14 +96,10 @@
 
   var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;gl_Position=vec4(a_position+u_translation,0.,1.);}";
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
   class Shader {
-    constructor({
-      context,
-      type,
-      source
-    }) {
+    constructor({ context, type, source }) {
       this.context = context;
       this.source = source;
       this.gl_shader = context.createShader(type);
@@ -140,10 +125,7 @@
   }
 
   class VertexShader extends Shader {
-    constructor({
-      context,
-      source
-    }) {
+    constructor({ context, source }) {
       super({
         context,
         source,
@@ -153,10 +135,7 @@
   }
 
   class FragmentShader extends Shader {
-    constructor({
-      context,
-      source
-    }) {
+    constructor({ context, source }) {
       super({
         context,
         source,
@@ -166,19 +145,11 @@
   }
 
   class Program {
-    constructor({
-      context,
-      vertexShader,
-      fragmentShader,
-      debug = false
-    }) {
+    constructor({ context, vertexShader, fragmentShader, debug = false }) {
       this.context = context;
       this.gl_program = context.createProgram();
       this.debug = debug;
-      this.attachShaders({
-        vertexShader,
-        fragmentShader
-      });
+      this.attachShaders({ vertexShader, fragmentShader });
       context.linkProgram(this.gl_program);
       this.verify();
       if (this.debug) {
@@ -188,10 +159,7 @@
       fragmentShader.delete(this.gl_program);
     }
 
-    attachShaders({
-      vertexShader,
-      fragmentShader
-    }) {
+    attachShaders({ vertexShader, fragmentShader }) {
       this.context.attachShader(this.gl_program, vertexShader.gl_shader);
       this.context.attachShader(this.gl_program, fragmentShader.gl_shader);
     }
@@ -221,51 +189,30 @@
   // prettier-ignore
   var trianglePoints = new Float32Array([
     // X, Y      R, G, B
-    -1, 0, 1, 0, 0,
-    1, 1, 0, 1, 0,
-    1, -1, 0, 0, 1
+     -1,  0,      1, 0, 0,
+     1,  1,      0, 1, 0,
+     1, -1,      0, 0, 1
   ]);
 
-  const gl = new Gl({
-    canvasSelector: '#webGl'
-  });
-  const {
-    context
-  } = gl;
+  const gl = new Gl({ canvasSelector: '#webGl' });
+  const { context } = gl;
   const [width, height] = [500, 500];
 
-  gl.setSize({
-    width,
-    height
-  });
-  gl.setClearColor({
-    r: 0,
-    g: 0,
-    b: 0,
-    a: 1
-  });
+  gl.setSize({ width, height });
+  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
   gl.clear();
 
-  const vertexShader = new VertexShader({
-    context,
-    source: vsSource
-  });
-  const fragmentShader = new FragmentShader({
-    context,
-    source: fsSource
-  });
-  const program = new Program({
-    context,
-    vertexShader,
-    fragmentShader,
-    debug: true
-  });
+  const vertexShader = new VertexShader({ context, source: vsSource });
+  const fragmentShader = new FragmentShader({ context, source: fsSource });
+  const program = new Program({ context, vertexShader, fragmentShader, debug: true });
 
   const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
   const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
   const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
   const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
   const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
+  const uScaleLoc = context.getUniformLocation(program.gl_program, 'u_scale');
+  const uRotationLoc = context.getUniformLocation(program.gl_program, 'u_rotation');
   const vertsBuffer = context.createBuffer();
 
   context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
@@ -292,35 +239,62 @@
   //context.bindBuffer(context.ARRAY_BUFFER, null);
 
   const translation = new Float32Array([0, 0]);
+  const rotation = new Float32Array([0, 1]);
+  const scale = new Float32Array([1, 1]);
 
   const drawScene = () => {
     gl.clear();
     context.uniform2fv(uTranslationLoc, translation);
+    context.uniform2fv(uScaleLoc, scale);
+    context.uniform2fv(uRotationLoc, rotation);
     context.useProgram(program.gl_program);
     context.drawArrays(context.TRIANGLES, 0, 3);
     context.drawArrays(context.POINTS, 0, 3);
   };
 
   // UI
+  const deg2rad = degrees => degrees * (Math.PI / 180);
   const xSlider = document.getElementById('x-slider');
   const ySlider = document.getElementById('y-slider');
+  const rotSlider = document.getElementById('rot-slider');
+  const scaleXslider = document.getElementById('scale-x-slider');
+  const scaleYslider = document.getElementById('scale-y-slider');
 
-  xSlider.addEventListener('input', ({
-    detail
-  }) => {
+  xSlider.addEventListener('input', ({ detail }) => {
     translation[0] = detail;
     drawScene();
   });
 
-  ySlider.addEventListener('input', ({
-    detail
-  }) => {
+  ySlider.addEventListener('input', ({ detail }) => {
     translation[1] = detail;
+    drawScene();
+  });
+
+  const rotate = ({ detail }) => {
+    const radians = deg2rad(360 - detail);
+    rotation[0] = Math.sin(radians);
+    rotation[1] = Math.cos(radians);
+    drawScene();
+  };
+
+  rotSlider.addEventListener('input', rotate);
+
+  scaleXslider.addEventListener('input', ({ detail }) => {
+    scale[0] = detail;
+    drawScene();
+  });
+
+  scaleYslider.addEventListener('input', ({ detail }) => {
+    scale[1] = detail;
     drawScene();
   });
 
   translation[0] = xSlider.value;
   translation[1] = ySlider.value;
+  scaleXslider.value = 1;
+  scaleYslider.value = 1;
+  rotSlider.value = 0;
+  rotate({ detail: rotSlider.value });
 
   drawScene();
 

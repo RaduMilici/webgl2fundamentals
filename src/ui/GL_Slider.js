@@ -12,8 +12,7 @@ class GlSlider extends HTMLElement {
     this.input.addEventListener('input', event => {
       event.stopPropagation();
       const { value } = event.target;
-      this.span.textContent = value;
-      this.dispatchEvent(new CustomEvent('input', { detail: value }));
+      this.setValue(value);
     });
 
     this.label.appendChild(this.input);
@@ -24,6 +23,16 @@ class GlSlider extends HTMLElement {
 
   get value() {
     return this.input.value;
+  }
+
+  set value(value) {
+    this.setValue(value);
+  }
+
+  setValue(value) {
+    this.input.value = value;
+    this.span.textContent = value;
+    this.dispatchEvent(new CustomEvent('input', { detail: value }));
   }
 
   makeInput() {
@@ -45,6 +54,7 @@ class GlSlider extends HTMLElement {
         background-color: black;
         color: white;
       }
+
     `;
     return style;
   }

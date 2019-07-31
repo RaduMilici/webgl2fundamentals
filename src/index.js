@@ -23,6 +23,8 @@ const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor
 const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
 const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
 const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
+const uScaleLoc = context.getUniformLocation(program.gl_program, 'u_scale');
+const uRotationLoc = context.getUniformLocation(program.gl_program, 'u_rotation');
 const vertsBuffer = context.createBuffer();
 
 context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
@@ -49,18 +51,26 @@ context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, c
 //context.bindBuffer(context.ARRAY_BUFFER, null);
 
 const translation = new Float32Array([0, 0]);
+const rotation = new Float32Array([0, 1]);
+const scale = new Float32Array([1, 1]);
 
 const drawScene = () => {
   gl.clear();
   context.uniform2fv(uTranslationLoc, translation);
+  context.uniform2fv(uScaleLoc, scale);
+  context.uniform2fv(uRotationLoc, rotation);
   context.useProgram(program.gl_program);
   context.drawArrays(context.TRIANGLES, 0, 3);
   context.drawArrays(context.POINTS, 0, 3);
 };
 
 // UI
+const deg2rad = degrees => degrees * (Math.PI / 180);
 const xSlider = document.getElementById('x-slider');
 const ySlider = document.getElementById('y-slider');
+const rotSlider = document.getElementById('rot-slider');
+const scaleXslider = document.getElementById('scale-x-slider');
+const scaleYslider = document.getElementById('scale-y-slider');
 
 xSlider.addEventListener('input', ({ detail }) => {
   translation[0] = detail;
@@ -72,7 +82,30 @@ ySlider.addEventListener('input', ({ detail }) => {
   drawScene();
 });
 
+const rotate = ({ detail }) => {
+  const radians = deg2rad(360 - detail);
+  rotation[0] = Math.sin(radians);
+  rotation[1] = Math.cos(radians);
+  drawScene();
+};
+
+rotSlider.addEventListener('input', rotate);
+
+scaleXslider.addEventListener('input', ({ detail }) => {
+  scale[0] = detail;
+  drawScene();
+});
+
+scaleYslider.addEventListener('input', ({ detail }) => {
+  scale[1] = detail;
+  drawScene();
+});
+
 translation[0] = xSlider.value;
 translation[1] = ySlider.value;
+scaleXslider.value = 1;
+scaleYslider.value = 1;
+rotSlider.value = 0;
+rotate({ detail: rotSlider.value });
 
 drawScene();
