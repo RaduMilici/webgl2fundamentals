@@ -59,7 +59,6 @@ const drawScene = () => {
 };
 
 // UI
-
 const xSlider = document.getElementById('x-slider');
 const ySlider = document.getElementById('y-slider');
 

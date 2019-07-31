@@ -4,7 +4,9 @@
   class GlSlider extends HTMLElement {
     constructor() {
       super();
-      const shadow = this.attachShadow({ mode: 'open' });
+      const shadow = this.attachShadow({
+        mode: 'open'
+      });
       this.label = document.createElement('label');
       this.label.setAttribute('class', 'label');
       this.span = document.createElement('span');
@@ -14,9 +16,13 @@
 
       this.input.addEventListener('input', event => {
         event.stopPropagation();
-        const { value } = event.target;
+        const {
+          value
+        } = event.target;
         this.span.textContent = value;
-        this.dispatchEvent(new CustomEvent('input', { detail: value }));
+        this.dispatchEvent(new CustomEvent('input', {
+          detail: value
+        }));
       });
 
       this.label.appendChild(this.input);
@@ -56,7 +62,9 @@
   customElements.define('gl-slider', GlSlider);
 
   class Gl {
-    constructor({ canvasSelector }) {
+    constructor({
+      canvasSelector
+    }) {
       this.canvas = document.querySelector(canvasSelector);
 
       if (!this.canvas instanceof HTMLCanvasElement) {
@@ -64,10 +72,18 @@
       }
 
       this.context = this.canvas.getContext('webgl2');
-      this.setClearColor({ r: 1, g: 1, b: 1, a: 1 });
+      this.setClearColor({
+        r: 1,
+        g: 1,
+        b: 1,
+        a: 1
+      });
     }
 
-    setSize({ width, height }) {
+    setSize({
+      width,
+      height
+    }) {
       this.context.canvas.style.width = `${width}px`;
       this.context.canvas.style.height = `${height}px`;
       this.context.canvas.width = width;
@@ -75,7 +91,12 @@
       this.context.viewport(0, 0, width, height);
     }
 
-    setClearColor({ r, g, b, a }) {
+    setClearColor({
+      r,
+      g,
+      b,
+      a
+    }) {
       this.context.clearColor(r, g, b, a);
     }
 
@@ -89,7 +110,11 @@
   var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;gl_Position=vec4(a_position+u_translation,0.,1.);}";
 
   class Shader {
-    constructor({ context, type, source }) {
+    constructor({
+      context,
+      type,
+      source
+    }) {
       this.context = context;
       this.source = source;
       this.gl_shader = context.createShader(type);
@@ -115,7 +140,10 @@
   }
 
   class VertexShader extends Shader {
-    constructor({ context, source }) {
+    constructor({
+      context,
+      source
+    }) {
       super({
         context,
         source,
@@ -125,7 +153,10 @@
   }
 
   class FragmentShader extends Shader {
-    constructor({ context, source }) {
+    constructor({
+      context,
+      source
+    }) {
       super({
         context,
         source,
@@ -135,11 +166,19 @@
   }
 
   class Program {
-    constructor({ context, vertexShader, fragmentShader, debug = false }) {
+    constructor({
+      context,
+      vertexShader,
+      fragmentShader,
+      debug = false
+    }) {
       this.context = context;
       this.gl_program = context.createProgram();
       this.debug = debug;
-      this.attachShaders({ vertexShader, fragmentShader });
+      this.attachShaders({
+        vertexShader,
+        fragmentShader
+      });
       context.linkProgram(this.gl_program);
       this.verify();
       if (this.debug) {
@@ -149,7 +188,10 @@
       fragmentShader.delete(this.gl_program);
     }
 
-    attachShaders({ vertexShader, fragmentShader }) {
+    attachShaders({
+      vertexShader,
+      fragmentShader
+    }) {
       this.context.attachShader(this.gl_program, vertexShader.gl_shader);
       this.context.attachShader(this.gl_program, fragmentShader.gl_shader);
     }
@@ -179,22 +221,45 @@
   // prettier-ignore
   var trianglePoints = new Float32Array([
     // X, Y      R, G, B
-     -1,  0,      1, 0, 0,
-     1,  1,      0, 1, 0,
-     1, -1,      0, 0, 1
+    -1, 0, 1, 0, 0,
+    1, 1, 0, 1, 0,
+    1, -1, 0, 0, 1
   ]);
 
-  const gl = new Gl({ canvasSelector: '#webGl' });
-  const { context } = gl;
+  const gl = new Gl({
+    canvasSelector: '#webGl'
+  });
+  const {
+    context
+  } = gl;
   const [width, height] = [500, 500];
 
-  gl.setSize({ width, height });
-  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
+  gl.setSize({
+    width,
+    height
+  });
+  gl.setClearColor({
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 1
+  });
   gl.clear();
 
-  const vertexShader = new VertexShader({ context, source: vsSource });
-  const fragmentShader = new FragmentShader({ context, source: fsSource });
-  const program = new Program({ context, vertexShader, fragmentShader, debug: true });
+  const vertexShader = new VertexShader({
+    context,
+    source: vsSource
+  });
+  const fragmentShader = new FragmentShader({
+    context,
+    source: fsSource
+  });
+  const program = new Program({
+    context,
+    vertexShader,
+    fragmentShader,
+    debug: true
+  });
 
   const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
   const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
@@ -237,16 +302,19 @@
   };
 
   // UI
-
   const xSlider = document.getElementById('x-slider');
   const ySlider = document.getElementById('y-slider');
 
-  xSlider.addEventListener('input', ({ detail }) => {
+  xSlider.addEventListener('input', ({
+    detail
+  }) => {
     translation[0] = detail;
     drawScene();
   });
 
-  ySlider.addEventListener('input', ({ detail }) => {
+  ySlider.addEventListener('input', ({
+    detail
+  }) => {
     translation[1] = detail;
     drawScene();
   });
