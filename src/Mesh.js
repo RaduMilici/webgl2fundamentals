@@ -28,6 +28,10 @@ export default class Mesh {
     this._uniforms = this._getUniforms();
   }
 
+  get vertCount() {
+    return this._geometry.length / 5;
+  }
+
   render() {
     this._context.useProgram(this._program.gl_program);
     this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
@@ -41,7 +45,7 @@ export default class Mesh {
     this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array([0, 0]));
     this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
     this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array([0, 1]));
-    this._context.uniform1f(this._uniforms.uPointSizeLoc, 10);
+    this._context.uniform1f(this._uniforms.uPointSizeLoc, 0);
   }
 
   _enableAttribs() {

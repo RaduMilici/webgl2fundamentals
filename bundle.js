@@ -149,6 +149,10 @@
       this._uniforms = this._getUniforms();
     }
 
+    get vertCount() {
+      return this._geometry.length / 5;
+    }
+
     render() {
       this._context.useProgram(this._program.gl_program);
       this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
@@ -162,7 +166,7 @@
       this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array([0, 0]));
       this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
       this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array([0, 1]));
-      this._context.uniform1f(this._uniforms.uPointSizeLoc, 10);
+      this._context.uniform1f(this._uniforms.uPointSizeLoc, 0);
     }
 
     _enableAttribs() {
@@ -249,7 +253,8 @@
   gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
   gl.clear();
 
-  const randomColor = () => new Color({
+  const randomColor = () =>
+    new Color({
       r: random(0, 1),
       g: random(0, 1),
       b: random(0, 1),
@@ -262,15 +267,26 @@
     const b = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
     const c = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
 
-    const values = [
-      ...a.values, ...randomColor().values,
-      ...b.values, ...randomColor().values,
-      ...c.values, ...randomColor().values,
+    //const triangle = new Triangle({ a, b, c });
+
+    return [
+      ...a.values,
+      ...randomColor().values,
+      ...b.values,
+      ...randomColor().values,
+      ...c.values,
+      ...randomColor().values,
     ];
-    
-    console.log(values);
-    
-    return new Float32Array(values);
+  };
+
+  const randomTris = num => {
+    const tris = [];
+
+    for (let i = 0; i < num; i++) {
+      tris.push(...randomTri());
+    }
+
+    return tris;
   };
 
   const meshes = [];
@@ -278,17 +294,17 @@
   for (let i = 0; i < 1; i++) {
     const mesh = new Mesh({
       context,
-      geometry: randomTri(),
+      geometry: new Float32Array(randomTris(3)),
       vertexShaderSrc: vsSource,
       fragmentShaderSrc: fsSource,
     });
-    meshes.push(mesh);  
+    meshes.push(mesh);
   }
 
   meshes.forEach(mesh => {
     mesh.render();
-    context.drawArrays(context.TRIANGLES, 0, 6);
-    context.drawArrays(context.POINTS, 0, 6);
+    context.drawArrays(context.TRIANGLES, 0, mesh.vertCount);
+    context.drawArrays(context.POINTS, 0, mesh.vertCount);
   });
 
   /*import './ui/index';
