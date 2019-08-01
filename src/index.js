@@ -1,4 +1,5 @@
-import './ui/index';
+import './mesh-test';
+/*import './ui/index';
 import Gl from './gl';
 import fsSource from './shaders/fragmentShader.glsl';
 import vsSource from './shaders/vertexShader.glsl';
@@ -32,8 +33,8 @@ context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
 context.useProgram(program.gl_program);
 context.uniform1f(uPointSizeLoc, 30);
 
-const vao = context.createVertexArray();
-context.bindVertexArray(vao);
+//const vao = context.createVertexArray();
+//context.bindVertexArray(vao);
 
 const size = 2; // x, y
 const colorSize = 3; // r, g, b
@@ -53,16 +54,6 @@ const translation = new Float32Array([0, 0]);
 const rotation = new Float32Array([0, 1]);
 const scale = new Float32Array([1, 1]);
 
-const drawScene = () => {
-  gl.clear();
-  context.uniform2fv(uTranslationLoc, translation);
-  context.uniform2fv(uScaleLoc, scale);
-  context.uniform2fv(uRotationLoc, rotation);
-  context.useProgram(program.gl_program);
-  context.drawArrays(context.TRIANGLES, 0, 3);
-  context.drawArrays(context.POINTS, 0, 3);
-};
-
 const mesh = new Mesh({
   context,
   geometry: trianglePoints,
@@ -70,6 +61,16 @@ const mesh = new Mesh({
   fragmentShaderSrc: fsSource,
 });
 
+const drawScene = () => {
+  gl.clear();
+  //mesh.render();
+  context.uniform2fv(uTranslationLoc, translation);
+  context.uniform2fv(uScaleLoc, scale);
+  context.uniform2fv(uRotationLoc, rotation);
+  context.useProgram(program.gl_program);
+  context.drawArrays(context.TRIANGLES, 0, 3);
+  context.drawArrays(context.POINTS, 0, 3);
+};
 console.log(mesh);
 
 // UI
@@ -113,7 +114,8 @@ translation[0] = xSlider.value;
 translation[1] = ySlider.value;
 scaleXslider.value = 1;
 scaleYslider.value = 1;
-rotSlider.value = 0;
-rotate({ detail: rotSlider.value });
+//rotSlider.value = 0;
+//rotate({ detail: rotSlider.value });
+console.log(translation, scale, rotation);
 
-drawScene();
+drawScene();*/
