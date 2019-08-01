@@ -3,10 +3,12 @@ class GlSlider extends HTMLElement {
     super();
     const shadow = this.attachShadow({ mode: 'open' });
     this.label = document.createElement('label');
-    this.label.setAttribute('id', 'label');
     this.span = document.createElement('span');
-    this.span.setAttribute('id', 'value');
     this.input = this.makeInput();
+
+    this.label.setAttribute('id', 'label');
+    this.span.setAttribute('id', 'value');
+
     this.label.innerHTML = this.getAttribute('label');
     this.span.textContent = this.input.value;
 

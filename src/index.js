@@ -5,6 +5,7 @@ import vsSource from './shaders/vertexShader.glsl';
 import { VertexShader, FragmentShader } from './shader/index';
 import Program from './Program';
 import trianglePoints from './const/trianglePoints';
+import Mesh from './Mesh';
 
 const gl = new Gl({ canvasSelector: '#webGl' });
 const { context } = gl;
@@ -20,7 +21,6 @@ const program = new Program({ context, vertexShader, fragmentShader, debug: true
 
 const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
 const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
-const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
 const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
 const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
 const uScaleLoc = context.getUniformLocation(program.gl_program, 'u_scale');
@@ -31,7 +31,6 @@ context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
 context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
 context.useProgram(program.gl_program);
 context.uniform1f(uPointSizeLoc, 30);
-context.uniform2f(uResolutionLoc, width, height);
 
 const vao = context.createVertexArray();
 context.bindVertexArray(vao);
@@ -63,6 +62,15 @@ const drawScene = () => {
   context.drawArrays(context.TRIANGLES, 0, 3);
   context.drawArrays(context.POINTS, 0, 3);
 };
+
+const mesh = new Mesh({
+  context,
+  geometry: trianglePoints,
+  vertexShaderSrc: vsSource,
+  fragmentShaderSrc: fsSource,
+});
+
+console.log(mesh);
 
 // UI
 const deg2rad = degrees => degrees * (Math.PI / 180);

@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   class GlSlider extends HTMLElement {
@@ -6,10 +6,12 @@
       super();
       const shadow = this.attachShadow({ mode: 'open' });
       this.label = document.createElement('label');
-      this.label.setAttribute('id', 'label');
       this.span = document.createElement('span');
-      this.span.setAttribute('id', 'value');
       this.input = this.makeInput();
+
+      this.label.setAttribute('id', 'label');
+      this.span.setAttribute('id', 'value');
+
       this.label.innerHTML = this.getAttribute('label');
       this.span.textContent = this.input.value;
 
@@ -102,11 +104,9 @@
     }
   }
 
-  var fsSource =
-    '#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}';
+  var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vsSource =
-    '#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_resolution;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}';
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
   class Shader {
     constructor({ context, type, source }) {
@@ -186,10 +186,7 @@
 
     validate() {
       this.context.validateProgram(this.gl_program);
-      const success = this.context.getProgramParameter(
-        this.gl_program,
-        this.context.VALIDATE_STATUS
-      );
+      const success = this.context.getProgramParameter(this.gl_program, this.context.VALIDATE_STATUS);
 
       if (!success) {
         const infoLog = this.context.getProgramInfoLog(this.gl_program);
@@ -207,6 +204,49 @@
      1, -1,      0, 0, 1
   ]);
 
+  class Mesh {
+    constructor({ context, geometry, vertexShaderSrc, fragmentShaderSrc }) {
+      this._context = context;
+      this._geometry = geometry;
+      this._vertexShaderSrc = vertexShaderSrc;
+      this._fragmentShaderSrc = fragmentShaderSrc;
+
+      const { vertexShader, fragmentShader } = this._compileShders({
+        context: this._context,
+        vertexShaderSrc: this._vertexShaderSrc,
+        fragmentShaderSrc: this._fragmentShaderSrc,
+      });
+
+      this._vertexShader = vertexShader;
+      this._fragmentShader = fragmentShader;
+      this._program = new Program({
+        context: this._context,
+        vertexShader: this._vertexShader,
+        fragmentShader: this._fragmentShader,
+        debug: true,
+      });
+
+      this._attributes = this._getAttributes();
+    }
+
+    _compileShders({ context, vertexShaderSrc, fragmentShaderSrc }) {
+      const vertexShader = new VertexShader({ context, source: vertexShaderSrc });
+      const fragmentShader = new FragmentShader({ context, source: fragmentShaderSrc });
+      return { vertexShader, fragmentShader };
+    }
+
+    _getAttributes() {
+      const aPositionLoc = this._getAttribLocation('a_position');
+      const aVertColorLoc = this._getAttribLocation('a_vertColor');
+
+      return { aPositionLoc, aVertColorLoc };
+    }
+
+    _getAttribLocation(name) {
+      return this._context.getAttribLocation(this._program.gl_program, name);
+    }
+  }
+
   const gl = new Gl({ canvasSelector: '#webGl' });
   const { context } = gl;
   const [width, height] = [500, 500];
@@ -221,7 +261,6 @@
 
   const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
   const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
-  const uResolutionLoc = context.getUniformLocation(program.gl_program, 'u_resolution');
   const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
   const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
   const uScaleLoc = context.getUniformLocation(program.gl_program, 'u_scale');
@@ -232,7 +271,6 @@
   context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
   context.useProgram(program.gl_program);
   context.uniform1f(uPointSizeLoc, 30);
-  context.uniform2f(uResolutionLoc, width, height);
 
   const vao = context.createVertexArray();
   context.bindVertexArray(vao);
@@ -264,6 +302,15 @@
     context.drawArrays(context.TRIANGLES, 0, 3);
     context.drawArrays(context.POINTS, 0, 3);
   };
+
+  const mesh = new Mesh({
+    context,
+    geometry: trianglePoints,
+    vertexShaderSrc: vsSource,
+    fragmentShaderSrc: fsSource,
+  });
+
+  console.log(mesh);
 
   // UI
   const deg2rad = degrees => degrees * (Math.PI / 180);
@@ -310,4 +357,5 @@
   rotate({ detail: rotSlider.value });
 
   drawScene();
-})();
+
+}());
