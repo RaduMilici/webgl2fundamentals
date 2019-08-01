@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   class Gl {
@@ -30,13 +30,9 @@
     }
   }
 
-  var fsSource =
-    '#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}';
+  var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vsSource =
-    '#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}';
-
-  // prettier-ignore
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
   class Shader {
     constructor({ context, type, source }) {
@@ -116,10 +112,7 @@
 
     validate() {
       this.context.validateProgram(this.gl_program);
-      const success = this.context.getProgramParameter(
-        this.gl_program,
-        this.context.VALIDATE_STATUS
-      );
+      const success = this.context.getProgramParameter(this.gl_program, this.context.VALIDATE_STATUS);
 
       if (!success) {
         const infoLog = this.context.getProgramInfoLog(this.gl_program);
@@ -159,11 +152,7 @@
     render() {
       this._context.useProgram(this._program.gl_program);
       this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
-      this._context.bufferData(
-        this._context.ARRAY_BUFFER,
-        this._geometry,
-        this._context.STATIC_DRAW
-      );
+      this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
       this._enableAttribs();
       this._setValues();
       this._context.useProgram(this._program.gl_program);
@@ -229,6 +218,29 @@
     }
   }
 
+  class Vector2 {
+    constructor({ x, y }) {
+      this.x = x;
+      this.y = y;
+    }
+
+    get values() {
+      return [this.x, this.y];
+    }
+  }
+
+  class Color {
+    constructor({ r, g, b }) {
+      this.r = r;
+      this.g = g;
+      this.b = b;
+    }
+
+    get values() {
+      return [this.r, this.g, this.b];
+    }
+  }
+
   const gl = new Gl({ canvasSelector: '#webGl' });
   const { context } = gl;
   const [width, height] = [500, 500];
@@ -237,34 +249,46 @@
   gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
   gl.clear();
 
+  const randomColor = () => new Color({
+      r: random(0, 1),
+      g: random(0, 1),
+      b: random(0, 1),
+    });
+
   const random = (min, max) => Math.random() * (max - min) + min;
 
   const randomTri = () => {
-    const triangle = [];
+    const a = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
+    const b = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
+    const c = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
 
-    for (let i = 0; i < 3; i++) {
-      triangle.push(random(-1, 1), random(-1, 1), Math.random(), Math.random(), Math.random());
-    }
-
-    return new Float32Array(triangle);
+    const values = [
+      ...a.values, ...randomColor().values,
+      ...b.values, ...randomColor().values,
+      ...c.values, ...randomColor().values,
+    ];
+    
+    console.log(values);
+    
+    return new Float32Array(values);
   };
 
   const meshes = [];
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1; i++) {
     const mesh = new Mesh({
       context,
       geometry: randomTri(),
       vertexShaderSrc: vsSource,
       fragmentShaderSrc: fsSource,
     });
-    meshes.push(mesh);
+    meshes.push(mesh);  
   }
 
   meshes.forEach(mesh => {
     mesh.render();
-    context.drawArrays(context.TRIANGLES, 0, 3);
-    context.drawArrays(context.POINTS, 0, 3);
+    context.drawArrays(context.TRIANGLES, 0, 6);
+    context.drawArrays(context.POINTS, 0, 6);
   });
 
   /*import './ui/index';
@@ -387,4 +411,5 @@
   console.log(translation, scale, rotation);
 
   drawScene();*/
-})();
+
+}());
