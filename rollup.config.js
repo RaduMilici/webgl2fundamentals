@@ -1,4 +1,5 @@
 import glsl from 'rollup-plugin-glsl';
+import json from 'rollup-plugin-json';
 
 module.exports = {
   input: 'src/index.js',
@@ -9,6 +10,9 @@ module.exports = {
   plugins: [
     glsl({
       include: 'src/**/*.glsl',
+    }),
+    json({
+      exclude: ['node_modules/**'],
     }),
   ],
 };

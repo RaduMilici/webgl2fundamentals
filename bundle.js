@@ -1,6 +1,80 @@
 (function () {
   'use strict';
 
+  class GlSlider extends HTMLElement {
+    constructor() {
+      super();
+      const shadow = this.attachShadow({ mode: 'open' });
+      this.label = document.createElement('label');
+      this.span = document.createElement('span');
+      this.input = this.makeInput();
+
+      this.label.setAttribute('id', 'label');
+      this.span.setAttribute('id', 'value');
+
+      this.label.innerHTML = this.getAttribute('label');
+      this.span.textContent = this.input.value;
+
+      this.input.addEventListener('input', event => {
+        event.stopPropagation();
+        const { value } = event.target;
+        this.setValue(value);
+      });
+
+      this.label.appendChild(this.input);
+      this.label.appendChild(this.span);
+      shadow.appendChild(this.makeStyle());
+      shadow.appendChild(this.label);
+    }
+
+    get value() {
+      return this.input.value;
+    }
+
+    set value(value) {
+      this.setValue(value);
+    }
+
+    setValue(value) {
+      this.input.value = value;
+      this.span.textContent = value;
+      this.dispatchEvent(new CustomEvent('input', { detail: value }));
+    }
+
+    makeInput() {
+      const max = parseFloat(this.getAttribute('max'));
+      const min = parseFloat(this.getAttribute('min'));
+      const input = document.createElement('input');
+      input.setAttribute('id', 'slider');
+      input.type = 'range';
+      input.setAttribute('step', this.getAttribute('step'));
+      input.setAttribute('min', min);
+      input.setAttribute('max', max);
+      input.value = (min + max) / 2;
+      return input;
+    }
+
+    makeStyle() {
+      const style = document.createElement('style');
+      style.textContent = `
+      #label {
+        background-color: black;
+        color: white;
+        display: inline-block;
+        padding: 5px;
+        font-family: sans-serif;
+      }
+
+      #slider {
+        margin: 0 20px;
+      }
+    `;
+      return style;
+    }
+  }
+
+  customElements.define('gl-slider', GlSlider);
+
   class Gl {
     constructor({ canvasSelector }) {
       this.canvas = document.querySelector(canvasSelector);
@@ -30,9 +104,11 @@
     }
   }
 
-  var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
+  var vertexColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
 
-  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
+  var sinColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec3 sinColor=vec3(0.,sin(gl_FragCoord.x*0.5),0.);color=vec4(sinColor,1.);}";
+
+  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
   class Shader {
     constructor({ context, type, source }) {
@@ -147,10 +223,39 @@
 
       this._attributes = this._getAttributes();
       this._uniforms = this._getUniforms();
+
+      this._position = [0, 0];
+      this._rotation = [0, 1];
     }
 
     get vertCount() {
       return this._geometry.length / 5;
+    }
+
+    get position() {
+      return {
+        x: this._position[0],
+        y: this._position[1]
+      }
+    }
+
+    set position({ x, y }) {
+      this._position[0] = x;
+      this._position[1] = y;
+      this._setPosition();
+    }
+
+    // get rotation() {
+    //   return {
+    //     x: this._rotation[0],
+    //     y: this._rotation[1]
+    //   }
+    // }
+
+    set rotation(radians) {
+      this._rotation[0] = Math.sin(radians);
+      this._rotation[1] = Math.cos(radians);
+      this._setRotation();
     }
 
     render() {
@@ -159,14 +264,27 @@
       this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
       this._enableAttribs();
       this._setValues();
-      this._context.useProgram(this._program.gl_program);
     }
 
     _setValues() {
-      this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array([0, 0]));
       this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
-      this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array([0, 1]));
-      this._context.uniform1f(this._uniforms.uPointSizeLoc, 0);
+      this._setPosition();
+      this._setRotation();
+      //this._context.uniform1f(this._uniforms.uPointSizeLoc, 30);
+    }
+
+    _setRotation() {
+      this._useCurrentProgram();
+      this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array(this._rotation));
+    }
+
+    _setPosition() {
+      this._useCurrentProgram();
+      this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array(this._position));
+    }
+
+    _useCurrentProgram() {
+      this._context.useProgram(this._program.gl_program);
     }
 
     _enableAttribs() {
@@ -222,17 +340,6 @@
     }
   }
 
-  class Vector2 {
-    constructor({ x, y }) {
-      this.x = x;
-      this.y = y;
-    }
-
-    get values() {
-      return [this.x, this.y];
-    }
-  }
-
   class Color {
     constructor({ r, g, b }) {
       this.r = r;
@@ -245,13 +352,16 @@
     }
   }
 
-  const gl = new Gl({ canvasSelector: '#webGl' });
-  const { context } = gl;
-  const [width, height] = [500, 500];
+  class Vector2 {
+    constructor({ x, y }) {
+      this.x = x;
+      this.y = y;
+    }
 
-  gl.setSize({ width, height });
-  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
-  gl.clear();
+    get values() {
+      return [this.x, this.y];
+    }
+  }
 
   const randomColor = () =>
     new Color({
@@ -259,15 +369,11 @@
       g: random(0, 1),
       b: random(0, 1),
     });
-
   const random = (min, max) => Math.random() * (max - min) + min;
-
   const randomTri = () => {
     const a = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
     const b = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
     const c = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
-
-    //const triangle = new Triangle({ a, b, c });
 
     return [
       ...a.values,
@@ -279,6 +385,7 @@
     ];
   };
 
+
   const randomTris = num => {
     const tris = [];
 
@@ -289,23 +396,54 @@
     return tris;
   };
 
+  const gl = new Gl({ canvasSelector: '#webGl' });
+  const { context } = gl;
+  const [width, height] = [500, 500];
+  gl.setSize({ width, height });
+  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
+
   const meshes = [];
 
-  for (let i = 0; i < 1; i++) {
-    const mesh = new Mesh({
-      context,
-      geometry: new Float32Array(randomTris(3)),
-      vertexShaderSrc: vsSource,
-      fragmentShaderSrc: fsSource,
-    });
-    meshes.push(mesh);
-  }
-
-  meshes.forEach(mesh => {
-    mesh.render();
-    context.drawArrays(context.TRIANGLES, 0, mesh.vertCount);
-    context.drawArrays(context.POINTS, 0, mesh.vertCount);
+  const meshVertexColors = new Mesh({
+    context,
+    geometry: new Float32Array(randomTris(100)),
+    vertexShaderSrc: vsSource,
+    fragmentShaderSrc: vertexColorsFS_Source,
   });
+
+  const meshSinColors = new Mesh({
+    context,
+    geometry: new Float32Array(randomTris(100)),
+    vertexShaderSrc: vsSource,
+    fragmentShaderSrc: sinColorsFS_Source,
+  });
+  meshes.push(meshSinColors, meshVertexColors);
+
+  const drawScene = () => {
+    gl.clear();
+    meshes.forEach(mesh => {
+      mesh.render();
+      context.drawArrays(context.TRIANGLES, 0, mesh.vertCount);
+      context.drawArrays(context.POINTS, 0, mesh.vertCount);
+    });
+    //context.useProgram(null);
+    requestAnimationFrame(drawScene);
+  };
+
+  document.getElementById('x-slider').addEventListener('input', ({ detail }) => {
+    meshes[1].position = { x: detail, y: meshes[1].position.y };
+  });
+
+  document.getElementById('y-slider').addEventListener('input', ({ detail }) => {
+    meshes[1].position = { x: meshes[1].position.x, y: detail };
+  });
+
+  document.getElementById('rot-slider').addEventListener('input', ({ detail }) => {
+    const radians = (360 - detail) * (Math.PI / 180);
+    meshes[1].rotation = radians;
+  });
+
+  drawScene();
 
   /*import './ui/index';
   import Gl from './gl';
