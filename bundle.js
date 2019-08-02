@@ -235,8 +235,8 @@
     get position() {
       return {
         x: this._position[0],
-        y: this._position[1]
-      }
+        y: this._position[1],
+      };
     }
 
     set position({ x, y }) {
@@ -385,7 +385,6 @@
     ];
   };
 
-
   const randomTris = num => {
     const tris = [];
 
@@ -424,7 +423,7 @@
     meshes.forEach(mesh => {
       mesh.render();
       context.drawArrays(context.TRIANGLES, 0, mesh.vertCount);
-      context.drawArrays(context.POINTS, 0, mesh.vertCount);
+      //context.drawArrays(context.POINTS, 0, mesh.vertCount);
     });
     //context.useProgram(null);
     requestAnimationFrame(drawScene);

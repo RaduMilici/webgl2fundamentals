@@ -1,7 +1,6 @@
 import Color from '../Color';
 import Vector2 from '../Vector2';
 
-
 const randomColor = () =>
   new Color({
     r: random(0, 1),
@@ -23,7 +22,6 @@ const randomTri = () => {
     ...randomColor().values,
   ];
 };
-
 
 const randomTris = num => {
   const tris = [];

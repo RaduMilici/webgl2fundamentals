@@ -1,6 +1,6 @@
 const Vector2 = require('./Vector2');
 var fs = require('fs');
-const Color = require('./Color')
+const Color = require('./Color');
 const randomColor = () =>
   new Color({
     r: random(0, 1),
@@ -24,7 +24,6 @@ const randomTri = () => {
     ...randomColor().values,
   ];
 };
-
 
 const randomTris = num => {
   const tris = [];

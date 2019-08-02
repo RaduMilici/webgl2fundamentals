@@ -36,7 +36,7 @@ const drawScene = () => {
   meshes.forEach(mesh => {
     mesh.render();
     context.drawArrays(context.TRIANGLES, 0, mesh.vertCount);
-    context.drawArrays(context.POINTS, 0, mesh.vertCount);
+    //context.drawArrays(context.POINTS, 0, mesh.vertCount);
   });
   //context.useProgram(null);
   requestAnimationFrame(drawScene);
