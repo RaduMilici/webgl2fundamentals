@@ -1,121 +1,59 @@
-import './mesh-test';
-/*import './ui/index';
+import './ui/index';
 import Gl from './gl';
-import fsSource from './shaders/fragmentShader.glsl';
+import vertexColorsFS_Source from './shaders/vertexColors_FS.glsl';
+import sinColorsFS_Source from './shaders/sinColor_FS.glsl';
 import vsSource from './shaders/vertexShader.glsl';
-import { VertexShader, FragmentShader } from './shader/index';
-import Program from './Program';
-import trianglePoints from './const/trianglePoints';
 import Mesh from './Mesh';
+import Scene from './Scene';
+//import trisJson from './myjsonfile.json';
+import randomTris from './utils/random-tris';
 
 const gl = new Gl({ canvasSelector: '#webGl' });
 const { context } = gl;
 const [width, height] = [500, 500];
-
 gl.setSize({ width, height });
 gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
-gl.clear();
 
-const vertexShader = new VertexShader({ context, source: vsSource });
-const fragmentShader = new FragmentShader({ context, source: fsSource });
-const program = new Program({ context, vertexShader, fragmentShader, debug: true });
+//const tris32 = new Float32Array(trisJson);
 
-const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
-const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
-const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
-const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
-const uScaleLoc = context.getUniformLocation(program.gl_program, 'u_scale');
-const uRotationLoc = context.getUniformLocation(program.gl_program, 'u_rotation');
-const vertsBuffer = context.createBuffer();
-
-context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
-context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
-context.useProgram(program.gl_program);
-context.uniform1f(uPointSizeLoc, 30);
-
-//const vao = context.createVertexArray();
-//context.bindVertexArray(vao);
-
-const size = 2; // x, y
-const colorSize = 3; // r, g, b
-const type = context.FLOAT; // the data is 32bit floats
-const normalize = context.FALSE; // don't normalize the data
-const stride = 5 * Float32Array.BYTES_PER_ELEMENT; // 0 means iterate size * sizeof(type) to get next index
-const offset = 0; // start at the beginning of the buffer
-const colorOffset = 2 * Float32Array.BYTES_PER_ELEMENT; // skip positions
-context.enableVertexAttribArray(aVertColorLoc);
-context.enableVertexAttribArray(aPositionLoc);
-context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
-context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);
-
-//context.bindBuffer(context.ARRAY_BUFFER, null);
-
-const translation = new Float32Array([0, 0]);
-const rotation = new Float32Array([0, 1]);
-const scale = new Float32Array([1, 1]);
-
-const mesh = new Mesh({
+const meshVertexColors = new Mesh({
   context,
-  geometry: trianglePoints,
+  geometry: new Float32Array(randomTris(3)),
   vertexShaderSrc: vsSource,
-  fragmentShaderSrc: fsSource,
+  fragmentShaderSrc: vertexColorsFS_Source,
 });
+
+const meshSinColors = new Mesh({
+  context,
+  geometry: new Float32Array(randomTris(3)),
+  vertexShaderSrc: vsSource,
+  fragmentShaderSrc: sinColorsFS_Source,
+});
+
+const scene = new Scene();
+const scene2 = new Scene();
+scene.add(meshVertexColors);
+scene2.add(meshSinColors);
 
 const drawScene = () => {
   gl.clear();
-  //mesh.render();
-  context.uniform2fv(uTranslationLoc, translation);
-  context.uniform2fv(uScaleLoc, scale);
-  context.uniform2fv(uRotationLoc, rotation);
-  context.useProgram(program.gl_program);
-  context.drawArrays(context.TRIANGLES, 0, 3);
-  context.drawArrays(context.POINTS, 0, 3);
+  gl.render(scene);
+  gl.render(scene2);
+  context.useProgram(null);
+  requestAnimationFrame(drawScene);
 };
-console.log(mesh);
-
-// UI
-const deg2rad = degrees => degrees * (Math.PI / 180);
-const xSlider = document.getElementById('x-slider');
-const ySlider = document.getElementById('y-slider');
-const rotSlider = document.getElementById('rot-slider');
-const scaleXslider = document.getElementById('scale-x-slider');
-const scaleYslider = document.getElementById('scale-y-slider');
-
-xSlider.addEventListener('input', ({ detail }) => {
-  translation[0] = detail;
-  drawScene();
+/*
+document.getElementById('x-slider').addEventListener('input', ({ detail }) => {
+  meshes[1].position = { x: detail, y: meshes[1].position.y };
 });
 
-ySlider.addEventListener('input', ({ detail }) => {
-  translation[1] = detail;
-  drawScene();
+document.getElementById('y-slider').addEventListener('input', ({ detail }) => {
+  meshes[1].position = { x: meshes[1].position.x, y: detail };
 });
 
-const rotate = ({ detail }) => {
-  const radians = deg2rad(360 - detail);
-  rotation[0] = Math.sin(radians);
-  rotation[1] = Math.cos(radians);
-  drawScene();
-};
-
-rotSlider.addEventListener('input', rotate);
-
-scaleXslider.addEventListener('input', ({ detail }) => {
-  scale[0] = detail;
-  drawScene();
+document.getElementById('rot-slider').addEventListener('input', ({ detail }) => {
+  const radians = (360 - detail) * (Math.PI / 180);
+  meshes[1].rotation = radians;
 });
-
-scaleYslider.addEventListener('input', ({ detail }) => {
-  scale[1] = detail;
-  drawScene();
-});
-
-translation[0] = xSlider.value;
-translation[1] = ySlider.value;
-scaleXslider.value = 1;
-scaleYslider.value = 1;
-//rotSlider.value = 0;
-//rotate({ detail: rotSlider.value });
-console.log(translation, scale, rotation);
-
-drawScene();*/
+*/
+drawScene();

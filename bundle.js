@@ -102,6 +102,10 @@
     clear() {
       this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
     }
+
+    render(scene) {
+      scene.render(this.context);
+    }
   }
 
   var vertexColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
@@ -203,13 +207,11 @@
       this._context = context;
       this._geometry = geometry;
       this._geometryBuffer = this._context.createBuffer();
-      this._vertexShaderSrc = vertexShaderSrc;
-      this._fragmentShaderSrc = fragmentShaderSrc;
 
       const { vertexShader, fragmentShader } = this._compileShders({
-        context: this._context,
-        vertexShaderSrc: this._vertexShaderSrc,
-        fragmentShaderSrc: this._fragmentShaderSrc,
+        context,
+        vertexShaderSrc,
+        fragmentShaderSrc,
       });
 
       this._vertexShader = vertexShader;
@@ -259,7 +261,7 @@
     }
 
     render() {
-      this._context.useProgram(this._program.gl_program);
+      this._useProgram();
       this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
       this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
       this._enableAttribs();
@@ -274,16 +276,16 @@
     }
 
     _setRotation() {
-      this._useCurrentProgram();
+      this._useProgram();
       this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array(this._rotation));
     }
 
     _setPosition() {
-      this._useCurrentProgram();
+      this._useProgram();
       this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array(this._position));
     }
 
-    _useCurrentProgram() {
+    _useProgram() {
       this._context.useProgram(this._program.gl_program);
     }
 
@@ -337,6 +339,23 @@
 
     _getUniformLocation(name) {
       return this._context.getUniformLocation(this._program.gl_program, name);
+    }
+  }
+
+  class Scene {
+    constructor() {
+      this._children = [];
+    }
+
+    add(...meshes) {
+      this._children.push(...meshes);
+    }
+
+    render(context) {
+      this._children.forEach(child => {
+        child.render();
+        context.drawArrays(context.TRIANGLES, 0, child.vertCount);
+      });
     }
   }
 
@@ -401,34 +420,35 @@
   gl.setSize({ width, height });
   gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
 
-  const meshes = [];
+  //const tris32 = new Float32Array(trisJson);
 
   const meshVertexColors = new Mesh({
     context,
-    geometry: new Float32Array(randomTris(100)),
+    geometry: new Float32Array(randomTris(3)),
     vertexShaderSrc: vsSource,
     fragmentShaderSrc: vertexColorsFS_Source,
   });
 
   const meshSinColors = new Mesh({
     context,
-    geometry: new Float32Array(randomTris(100)),
+    geometry: new Float32Array(randomTris(3)),
     vertexShaderSrc: vsSource,
     fragmentShaderSrc: sinColorsFS_Source,
   });
-  meshes.push(meshSinColors, meshVertexColors);
+
+  const scene = new Scene();
+  const scene2 = new Scene();
+  scene.add(meshVertexColors);
+  scene2.add(meshSinColors);
 
   const drawScene = () => {
     gl.clear();
-    meshes.forEach(mesh => {
-      mesh.render();
-      context.drawArrays(context.TRIANGLES, 0, mesh.vertCount);
-      //context.drawArrays(context.POINTS, 0, mesh.vertCount);
-    });
-    //context.useProgram(null);
+    gl.render(scene);
+    gl.render(scene2);
+    context.useProgram(null);
     requestAnimationFrame(drawScene);
   };
-
+  /*
   document.getElementById('x-slider').addEventListener('input', ({ detail }) => {
     meshes[1].position = { x: detail, y: meshes[1].position.y };
   });
@@ -441,128 +461,7 @@
     const radians = (360 - detail) * (Math.PI / 180);
     meshes[1].rotation = radians;
   });
-
+  */
   drawScene();
-
-  /*import './ui/index';
-  import Gl from './gl';
-  import fsSource from './shaders/fragmentShader.glsl';
-  import vsSource from './shaders/vertexShader.glsl';
-  import { VertexShader, FragmentShader } from './shader/index';
-  import Program from './Program';
-  import trianglePoints from './const/trianglePoints';
-  import Mesh from './Mesh';
-
-  const gl = new Gl({ canvasSelector: '#webGl' });
-  const { context } = gl;
-  const [width, height] = [500, 500];
-
-  gl.setSize({ width, height });
-  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
-  gl.clear();
-
-  const vertexShader = new VertexShader({ context, source: vsSource });
-  const fragmentShader = new FragmentShader({ context, source: fsSource });
-  const program = new Program({ context, vertexShader, fragmentShader, debug: true });
-
-  const aPositionLoc = context.getAttribLocation(program.gl_program, 'a_position');
-  const aVertColorLoc = context.getAttribLocation(program.gl_program, 'a_vertColor');
-  const uPointSizeLoc = context.getUniformLocation(program.gl_program, 'u_pointSize');
-  const uTranslationLoc = context.getUniformLocation(program.gl_program, 'u_translation');
-  const uScaleLoc = context.getUniformLocation(program.gl_program, 'u_scale');
-  const uRotationLoc = context.getUniformLocation(program.gl_program, 'u_rotation');
-  const vertsBuffer = context.createBuffer();
-
-  context.bindBuffer(context.ARRAY_BUFFER, vertsBuffer);
-  context.bufferData(context.ARRAY_BUFFER, trianglePoints, context.STATIC_DRAW);
-  context.useProgram(program.gl_program);
-  context.uniform1f(uPointSizeLoc, 30);
-
-  //const vao = context.createVertexArray();
-  //context.bindVertexArray(vao);
-
-  const size = 2; // x, y
-  const colorSize = 3; // r, g, b
-  const type = context.FLOAT; // the data is 32bit floats
-  const normalize = context.FALSE; // don't normalize the data
-  const stride = 5 * Float32Array.BYTES_PER_ELEMENT; // 0 means iterate size * sizeof(type) to get next index
-  const offset = 0; // start at the beginning of the buffer
-  const colorOffset = 2 * Float32Array.BYTES_PER_ELEMENT; // skip positions
-  context.enableVertexAttribArray(aVertColorLoc);
-  context.enableVertexAttribArray(aPositionLoc);
-  context.vertexAttribPointer(aPositionLoc, size, type, normalize, stride, offset);
-  context.vertexAttribPointer(aVertColorLoc, colorSize, type, normalize, stride, colorOffset);
-
-  //context.bindBuffer(context.ARRAY_BUFFER, null);
-
-  const translation = new Float32Array([0, 0]);
-  const rotation = new Float32Array([0, 1]);
-  const scale = new Float32Array([1, 1]);
-
-  const mesh = new Mesh({
-    context,
-    geometry: trianglePoints,
-    vertexShaderSrc: vsSource,
-    fragmentShaderSrc: fsSource,
-  });
-
-  const drawScene = () => {
-    gl.clear();
-    //mesh.render();
-    context.uniform2fv(uTranslationLoc, translation);
-    context.uniform2fv(uScaleLoc, scale);
-    context.uniform2fv(uRotationLoc, rotation);
-    context.useProgram(program.gl_program);
-    context.drawArrays(context.TRIANGLES, 0, 3);
-    context.drawArrays(context.POINTS, 0, 3);
-  };
-  console.log(mesh);
-
-  // UI
-  const deg2rad = degrees => degrees * (Math.PI / 180);
-  const xSlider = document.getElementById('x-slider');
-  const ySlider = document.getElementById('y-slider');
-  const rotSlider = document.getElementById('rot-slider');
-  const scaleXslider = document.getElementById('scale-x-slider');
-  const scaleYslider = document.getElementById('scale-y-slider');
-
-  xSlider.addEventListener('input', ({ detail }) => {
-    translation[0] = detail;
-    drawScene();
-  });
-
-  ySlider.addEventListener('input', ({ detail }) => {
-    translation[1] = detail;
-    drawScene();
-  });
-
-  const rotate = ({ detail }) => {
-    const radians = deg2rad(360 - detail);
-    rotation[0] = Math.sin(radians);
-    rotation[1] = Math.cos(radians);
-    drawScene();
-  };
-
-  rotSlider.addEventListener('input', rotate);
-
-  scaleXslider.addEventListener('input', ({ detail }) => {
-    scale[0] = detail;
-    drawScene();
-  });
-
-  scaleYslider.addEventListener('input', ({ detail }) => {
-    scale[1] = detail;
-    drawScene();
-  });
-
-  translation[0] = xSlider.value;
-  translation[1] = ySlider.value;
-  scaleXslider.value = 1;
-  scaleYslider.value = 1;
-  //rotSlider.value = 0;
-  //rotate({ detail: rotSlider.value });
-  console.log(translation, scale, rotation);
-
-  drawScene();*/
 
 }());

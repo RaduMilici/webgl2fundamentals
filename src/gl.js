@@ -25,4 +25,8 @@ export default class Gl {
   clear() {
     this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
   }
+
+  render(scene) {
+    scene.render(this.context);
+  }
 }

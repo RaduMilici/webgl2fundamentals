@@ -6,13 +6,11 @@ export default class Mesh {
     this._context = context;
     this._geometry = geometry;
     this._geometryBuffer = this._context.createBuffer();
-    this._vertexShaderSrc = vertexShaderSrc;
-    this._fragmentShaderSrc = fragmentShaderSrc;
 
     const { vertexShader, fragmentShader } = this._compileShders({
-      context: this._context,
-      vertexShaderSrc: this._vertexShaderSrc,
-      fragmentShaderSrc: this._fragmentShaderSrc,
+      context,
+      vertexShaderSrc,
+      fragmentShaderSrc,
     });
 
     this._vertexShader = vertexShader;
@@ -62,7 +60,7 @@ export default class Mesh {
   }
 
   render() {
-    this._context.useProgram(this._program.gl_program);
+    this._useProgram();
     this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
     this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
     this._enableAttribs();
@@ -77,16 +75,16 @@ export default class Mesh {
   }
 
   _setRotation() {
-    this._useCurrentProgram();
+    this._useProgram();
     this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array(this._rotation));
   }
 
   _setPosition() {
-    this._useCurrentProgram();
+    this._useProgram();
     this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array(this._position));
   }
 
-  _useCurrentProgram() {
+  _useProgram() {
     this._context.useProgram(this._program.gl_program);
   }
 
