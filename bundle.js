@@ -347,8 +347,26 @@
       this._children = [];
     }
 
-    add(...meshes) {
-      this._children.push(...meshes);
+    add(...objects) {
+      objects.forEach(object => {
+        if (!this.contains(object)) {
+          this._children.push(object);
+        }
+      });
+    }
+
+    remove(...objects) {
+      objects.forEach(object => {
+        const index = this._getChildIndex(object);
+
+        if (index !== -1) {
+          this._children.splice(index, 1);
+        }
+      });
+    }
+
+    contains(object) {
+      return this._getChildIndex(object) !== -1;
     }
 
     render(context) {
@@ -356,6 +374,10 @@
         child.render();
         context.drawArrays(context.TRIANGLES, 0, child.vertCount);
       });
+    }
+
+    _getChildIndex(object) {
+      return this._children.indexOf(object);
     }
   }
 
@@ -417,10 +439,9 @@
   const gl = new Gl({ canvasSelector: '#webGl' });
   const { context } = gl;
   const [width, height] = [500, 500];
+
   gl.setSize({ width, height });
   gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
-
-  //const tris32 = new Float32Array(trisJson);
 
   const meshVertexColors = new Mesh({
     context,
@@ -441,6 +462,14 @@
   scene.add(meshVertexColors);
   scene2.add(meshSinColors);
 
+  setInterval(() => {
+    if (scene2.contains(meshSinColors)) {
+      scene2.remove(meshSinColors);
+    } else {
+      scene2.add(meshSinColors);
+    }
+  }, 1000);
+
   const drawScene = () => {
     gl.clear();
     gl.render(scene);
@@ -448,20 +477,7 @@
     context.useProgram(null);
     requestAnimationFrame(drawScene);
   };
-  /*
-  document.getElementById('x-slider').addEventListener('input', ({ detail }) => {
-    meshes[1].position = { x: detail, y: meshes[1].position.y };
-  });
 
-  document.getElementById('y-slider').addEventListener('input', ({ detail }) => {
-    meshes[1].position = { x: meshes[1].position.x, y: detail };
-  });
-
-  document.getElementById('rot-slider').addEventListener('input', ({ detail }) => {
-    const radians = (360 - detail) * (Math.PI / 180);
-    meshes[1].rotation = radians;
-  });
-  */
   drawScene();
 
 }());

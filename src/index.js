@@ -5,16 +5,14 @@ import sinColorsFS_Source from './shaders/sinColor_FS.glsl';
 import vsSource from './shaders/vertexShader.glsl';
 import Mesh from './Mesh';
 import Scene from './Scene';
-//import trisJson from './myjsonfile.json';
 import randomTris from './utils/random-tris';
 
 const gl = new Gl({ canvasSelector: '#webGl' });
 const { context } = gl;
 const [width, height] = [500, 500];
+
 gl.setSize({ width, height });
 gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
-
-//const tris32 = new Float32Array(trisJson);
 
 const meshVertexColors = new Mesh({
   context,
@@ -35,6 +33,14 @@ const scene2 = new Scene();
 scene.add(meshVertexColors);
 scene2.add(meshSinColors);
 
+setInterval(() => {
+  if (scene2.contains(meshSinColors)) {
+    scene2.remove(meshSinColors);
+  } else {
+    scene2.add(meshSinColors);
+  }
+}, 1000);
+
 const drawScene = () => {
   gl.clear();
   gl.render(scene);
@@ -42,18 +48,5 @@ const drawScene = () => {
   context.useProgram(null);
   requestAnimationFrame(drawScene);
 };
-/*
-document.getElementById('x-slider').addEventListener('input', ({ detail }) => {
-  meshes[1].position = { x: detail, y: meshes[1].position.y };
-});
 
-document.getElementById('y-slider').addEventListener('input', ({ detail }) => {
-  meshes[1].position = { x: meshes[1].position.x, y: detail };
-});
-
-document.getElementById('rot-slider').addEventListener('input', ({ detail }) => {
-  const radians = (360 - detail) * (Math.PI / 180);
-  meshes[1].rotation = radians;
-});
-*/
 drawScene();
