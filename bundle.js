@@ -1,5 +1,129 @@
-(function () {
+(function() {
   'use strict';
+
+  const RadToDeg = rad => rad * (180 / Math.PI);
+
+  class Vector {
+    constructor({ x, y } = { x: 0, y: 0 }) {
+      this.x = x;
+      this.y = y;
+    }
+    clone() {
+      return new Vector({ x: this.x, y: this.y });
+    }
+    magnitude() {
+      const x = this.x * this.x;
+      const y = this.y * this.y;
+      const magnitude = Math.sqrt(x + y);
+      return magnitude;
+    }
+    dotProduct({ x, y }) {
+      return this.x * x + this.y * y;
+    }
+    add(vector) {
+      const x = this.x + vector.x;
+      const y = this.y + vector.y;
+      return new Vector({ x, y });
+    }
+    sub(vector) {
+      const x = this.x + -vector.x;
+      const y = this.y + -vector.y;
+      return new Vector({ x, y });
+    }
+    multiplyScalar(scalar) {
+      const x = this.x * scalar;
+      const y = this.y * scalar;
+      return new Vector({ x, y });
+    }
+    normalize() {
+      const magnitude = this.magnitude();
+      const x = this.x / magnitude;
+      const y = this.y / magnitude;
+      return new Vector({ x, y });
+    }
+    lerp(vector, alpha) {
+      const x = this.x + (vector.x - this.x) * alpha;
+      const y = this.y + (vector.y - this.y) * alpha;
+      return new Vector({ x, y });
+    }
+    negative() {
+      const x = -this.x;
+      const y = -this.y;
+      return new Vector({ x, y });
+    }
+    perpendicular() {
+      const right = new Vector({ x: -this.y, y: this.x });
+      const left = new Vector({ x: this.y, y: -this.x });
+      return { left, right };
+    }
+    scale(length) {
+      const normalized = this.normalize();
+      const x = normalized.x * length;
+      const y = normalized.y * length;
+      return new Vector({ x, y });
+    }
+    angleDeg(vector) {
+      const angle = this.angle(vector);
+      return RadToDeg(angle);
+    }
+    angleRad(vector) {
+      return this.angle(vector);
+    }
+    bisector(vector) {
+      const normalized = this.normalize();
+      const normalizedVector = vector.normalize();
+      const sum = normalized.add(normalizedVector);
+      const magnitude = (this.magnitude() + vector.magnitude()) / 2;
+      return sum.scale(magnitude);
+    }
+    equals(vector) {
+      return this.x === vector.x && this.y === vector.y;
+    }
+    distanceTo(vector) {
+      return this.sub(vector).magnitude();
+    }
+    midpoint(vector) {
+      const x = (this.x + vector.x) / 2;
+      const y = (this.y + vector.y) / 2;
+      return new Vector({ x, y });
+    }
+    static FindPolyCentroid(points) {
+      let x = 0;
+      let y = 0;
+      points.forEach(point => {
+        x += point.x;
+        y += point.y;
+      });
+      x /= points.length;
+      y /= points.length;
+      return new Vector({ x, y });
+    }
+    static ArrangePointsCCW(points) {
+      const centroid = Vector.FindPolyCentroid(points);
+      let clone = [...points];
+      clone.sort((a, b) => {
+        const angleA = Math.atan2(a.y - centroid.y, a.x - centroid.x);
+        const angleB = Math.atan2(b.y - centroid.y, b.x - centroid.x);
+        return angleA - angleB;
+      });
+      return clone;
+    }
+    static UniqueFromArray(points) {
+      const isUnique = (vector, index, array) => {
+        return (
+          array.findIndex(vectorIndex => {
+            return vector.equals(vectorIndex);
+          }) === index
+        );
+      };
+      return points.filter(isUnique);
+    }
+    angle(vector) {
+      const product = this.dotProduct(vector);
+      const cosAngle = product / (this.magnitude() * vector.magnitude());
+      return Math.acos(cosAngle);
+    }
+  }
 
   class GlSlider extends HTMLElement {
     constructor() {
@@ -112,11 +236,14 @@
     }
   }
 
-  var vertexColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}";
+  var vertexColorsFS_Source =
+    '#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){color=vec4(fragColor,1.);}';
 
-  var sinColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec3 sinColor=vec3(0.,sin(gl_FragCoord.x*0.5),0.);color=vec4(sinColor,1.);}";
+  var sinColorsFS_Source =
+    '#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec3 sinColor=vec3(0.,sin(gl_FragCoord.x*0.5),0.);color=vec4(sinColor,1.);}';
 
-  var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
+  var vsSource =
+    '#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}';
 
   class Shader {
     constructor({ context, type, source }) {
@@ -196,7 +323,10 @@
 
     validate() {
       this.context.validateProgram(this.gl_program);
-      const success = this.context.getProgramParameter(this.gl_program, this.context.VALIDATE_STATUS);
+      const success = this.context.getProgramParameter(
+        this.gl_program,
+        this.context.VALIDATE_STATUS
+      );
 
       if (!success) {
         const infoLog = this.context.getProgramInfoLog(this.gl_program);
@@ -260,7 +390,11 @@
     render() {
       this._useProgram();
       this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
-      this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
+      this._context.bufferData(
+        this._context.ARRAY_BUFFER,
+        this._geometry,
+        this._context.STATIC_DRAW
+      );
       this._enableAttribs();
       this._setValues();
     }
@@ -433,10 +567,12 @@
     return tris;
   };
 
-  const renderer = new Renderer({ 
+  console.log(Vector);
+
+  const renderer = new Renderer({
     canvasSelector: '#webGl',
     clearColor: { r: 0, g: 0, b: 0, a: 1 },
-    size: { width: 500, height: 500 }
+    size: { width: 500, height: 500 },
   });
 
   const { context } = renderer;
@@ -466,5 +602,4 @@
   };
 
   drawScene();
-
-}());
+})();

@@ -1,5 +1,6 @@
 import glsl from 'rollup-plugin-glsl';
 import json from 'rollup-plugin-json';
+import resolve from 'rollup-plugin-node-resolve';
 
 module.exports = {
   input: 'src/index.js',
@@ -8,6 +9,7 @@ module.exports = {
     format: 'iife',
   },
   plugins: [
+    resolve(),
     glsl({
       include: 'src/**/*.glsl',
     }),

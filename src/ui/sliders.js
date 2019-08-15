@@ -1,4 +1,3 @@
-
 /*
 document.getElementById('x-slider').addEventListener('input', ({ detail }) => {
   meshes[1].position = { x: detail, y: meshes[1].position.y };

@@ -1,3 +1,4 @@
+import { Vector } from 'pulsar-pathfinding';
 import './ui/index';
 import Renderer from './Renderer';
 import vertexColorsFS_Source from './shaders/vertexColors_FS.glsl';
@@ -7,10 +8,12 @@ import Mesh from './Mesh';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
 
-const renderer = new Renderer({ 
+console.log(Vector);
+
+const renderer = new Renderer({
   canvasSelector: '#webGl',
   clearColor: { r: 0, g: 0, b: 0, a: 1 },
-  size: { width: 500, height: 500 }
+  size: { width: 500, height: 500 },
 });
 
 const { context } = renderer;
