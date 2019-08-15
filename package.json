@@ -30,6 +30,6 @@
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
-    "pulsar-pathfinding": "^1.3.12"
+    "pulsar-pathfinding": "^1.3.13"
   }
 }

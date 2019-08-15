@@ -1,5 +1,4 @@
 import { Updater, Component } from 'pulsar-pathfinding';
-import './ui/index';
 import Renderer from './Renderer';
 import vertexColorsFS_Source from './shaders/vertexColors_FS.glsl';
 import sinColorsFS_Source from './shaders/sinColor_FS.glsl';
@@ -33,7 +32,7 @@ class Draw extends Component {
     });
 
     this.scene = new Scene();
-    this.scene.add(vertexColors);
+    this.scene.add(sinColors, vertexColors);
   }
 
   update() {
