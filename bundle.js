@@ -75,8 +75,8 @@
 
   customElements.define('gl-slider', GlSlider);
 
-  class Gl {
-    constructor({ canvasSelector }) {
+  class Renderer {
+    constructor({ canvasSelector, size, clearColor }) {
       this.canvas = document.querySelector(canvasSelector);
 
       if (!this.canvas instanceof HTMLCanvasElement) {
@@ -84,7 +84,9 @@
       }
 
       this.context = this.canvas.getContext('webgl2');
-      this.setClearColor({ r: 1, g: 1, b: 1, a: 1 });
+      const { width, height } = size;
+      this.setSize({ width, height });
+      this.setClearColor(clearColor);
     }
 
     setSize({ width, height }) {
@@ -103,8 +105,10 @@
       this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
     }
 
-    render(scene) {
-      scene.render(this.context);
+    render(...scenes) {
+      this.clear();
+      scenes.forEach(scene => scene.render(this.context));
+      this.context.useProgram(null);
     }
   }
 
@@ -247,13 +251,6 @@
       this._setPosition();
     }
 
-    // get rotation() {
-    //   return {
-    //     x: this._rotation[0],
-    //     y: this._rotation[1]
-    //   }
-    // }
-
     set rotation(radians) {
       this._rotation[0] = Math.sin(radians);
       this._rotation[1] = Math.cos(radians);
@@ -344,13 +341,13 @@
 
   class Scene {
     constructor() {
-      this._children = [];
+      this._objects = [];
     }
 
     add(...objects) {
       objects.forEach(object => {
         if (!this.contains(object)) {
-          this._children.push(object);
+          this._objects.push(object);
         }
       });
     }
@@ -360,7 +357,7 @@
         const index = this._getChildIndex(object);
 
         if (index !== -1) {
-          this._children.splice(index, 1);
+          this._objects.splice(index, 1);
         }
       });
     }
@@ -370,14 +367,14 @@
     }
 
     render(context) {
-      this._children.forEach(child => {
+      this._objects.forEach(child => {
         child.render();
         context.drawArrays(context.TRIANGLES, 0, child.vertCount);
       });
     }
 
     _getChildIndex(object) {
-      return this._children.indexOf(object);
+      return this._objects.indexOf(object);
     }
   }
 
@@ -436,21 +433,22 @@
     return tris;
   };
 
-  const gl = new Gl({ canvasSelector: '#webGl' });
-  const { context } = gl;
-  const [width, height] = [500, 500];
+  const renderer = new Renderer({ 
+    canvasSelector: '#webGl',
+    clearColor: { r: 0, g: 0, b: 0, a: 1 },
+    size: { width: 500, height: 500 }
+  });
 
-  gl.setSize({ width, height });
-  gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
+  const { context } = renderer;
 
-  const meshVertexColors = new Mesh({
+  const vertexColors = new Mesh({
     context,
     geometry: new Float32Array(randomTris(3)),
     vertexShaderSrc: vsSource,
     fragmentShaderSrc: vertexColorsFS_Source,
   });
 
-  const meshSinColors = new Mesh({
+  const sinColors = new Mesh({
     context,
     geometry: new Float32Array(randomTris(3)),
     vertexShaderSrc: vsSource,
@@ -459,22 +457,11 @@
 
   const scene = new Scene();
   const scene2 = new Scene();
-  scene.add(meshVertexColors);
-  scene2.add(meshSinColors);
-
-  setInterval(() => {
-    if (scene2.contains(meshSinColors)) {
-      scene2.remove(meshSinColors);
-    } else {
-      scene2.add(meshSinColors);
-    }
-  }, 1000);
+  scene.add(vertexColors);
+  scene2.add(sinColors);
 
   const drawScene = () => {
-    gl.clear();
-    gl.render(scene);
-    gl.render(scene2);
-    context.useProgram(null);
+    renderer.render(scene, scene2);
     requestAnimationFrame(drawScene);
   };
 

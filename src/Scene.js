@@ -1,12 +1,12 @@
 export default class Scene {
   constructor() {
-    this._children = [];
+    this._objects = [];
   }
 
   add(...objects) {
     objects.forEach(object => {
       if (!this.contains(object)) {
-        this._children.push(object);
+        this._objects.push(object);
       }
     });
   }
@@ -16,7 +16,7 @@ export default class Scene {
       const index = this._getChildIndex(object);
 
       if (index !== -1) {
-        this._children.splice(index, 1);
+        this._objects.splice(index, 1);
       }
     });
   }
@@ -26,13 +26,13 @@ export default class Scene {
   }
 
   render(context) {
-    this._children.forEach(child => {
+    this._objects.forEach(child => {
       child.render();
       context.drawArrays(context.TRIANGLES, 0, child.vertCount);
     });
   }
 
   _getChildIndex(object) {
-    return this._children.indexOf(object);
+    return this._objects.indexOf(object);
   }
 }

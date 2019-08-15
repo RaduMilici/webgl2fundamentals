@@ -1,5 +1,5 @@
-export default class Gl {
-  constructor({ canvasSelector }) {
+export default class Renderer {
+  constructor({ canvasSelector, size, clearColor }) {
     this.canvas = document.querySelector(canvasSelector);
 
     if (!this.canvas instanceof HTMLCanvasElement) {
@@ -7,7 +7,9 @@ export default class Gl {
     }
 
     this.context = this.canvas.getContext('webgl2');
-    this.setClearColor({ r: 1, g: 1, b: 1, a: 1 });
+    const { width, height } = size;
+    this.setSize({ width, height });
+    this.setClearColor(clearColor);
   }
 
   setSize({ width, height }) {
@@ -26,7 +28,9 @@ export default class Gl {
     this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
   }
 
-  render(scene) {
-    scene.render(this.context);
+  render(...scenes) {
+    this.clear();
+    scenes.forEach(scene => scene.render(this.context));
+    this.context.useProgram(null);
   }
 }

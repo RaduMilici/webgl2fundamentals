@@ -1,5 +1,5 @@
 import './ui/index';
-import Gl from './gl';
+import Renderer from './Renderer';
 import vertexColorsFS_Source from './shaders/vertexColors_FS.glsl';
 import sinColorsFS_Source from './shaders/sinColor_FS.glsl';
 import vsSource from './shaders/vertexShader.glsl';
@@ -7,21 +7,22 @@ import Mesh from './Mesh';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
 
-const gl = new Gl({ canvasSelector: '#webGl' });
-const { context } = gl;
-const [width, height] = [500, 500];
+const renderer = new Renderer({ 
+  canvasSelector: '#webGl',
+  clearColor: { r: 0, g: 0, b: 0, a: 1 },
+  size: { width: 500, height: 500 }
+});
 
-gl.setSize({ width, height });
-gl.setClearColor({ r: 0, g: 0, b: 0, a: 1 });
+const { context } = renderer;
 
-const meshVertexColors = new Mesh({
+const vertexColors = new Mesh({
   context,
   geometry: new Float32Array(randomTris(3)),
   vertexShaderSrc: vsSource,
   fragmentShaderSrc: vertexColorsFS_Source,
 });
 
-const meshSinColors = new Mesh({
+const sinColors = new Mesh({
   context,
   geometry: new Float32Array(randomTris(3)),
   vertexShaderSrc: vsSource,
@@ -30,22 +31,11 @@ const meshSinColors = new Mesh({
 
 const scene = new Scene();
 const scene2 = new Scene();
-scene.add(meshVertexColors);
-scene2.add(meshSinColors);
-
-setInterval(() => {
-  if (scene2.contains(meshSinColors)) {
-    scene2.remove(meshSinColors);
-  } else {
-    scene2.add(meshSinColors);
-  }
-}, 1000);
+scene.add(vertexColors);
+scene2.add(sinColors);
 
 const drawScene = () => {
-  gl.clear();
-  gl.render(scene);
-  gl.render(scene2);
-  context.useProgram(null);
+  renderer.render(scene, scene2);
   requestAnimationFrame(drawScene);
 };
 

@@ -46,13 +46,6 @@ export default class Mesh {
     this._setPosition();
   }
 
-  // get rotation() {
-  //   return {
-  //     x: this._rotation[0],
-  //     y: this._rotation[1]
-  //   }
-  // }
-
   set rotation(radians) {
     this._rotation[0] = Math.sin(radians);
     this._rotation[1] = Math.cos(radians);
