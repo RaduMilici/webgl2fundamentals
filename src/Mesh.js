@@ -1,8 +1,10 @@
+import { uniqueId } from 'pulsar-pathfinding';
 import { VertexShader, FragmentShader } from './shader/index';
 import Program from './Program';
 
 export default class Mesh {
   constructor({ context, geometry, vertexShaderSrc, fragmentShaderSrc }) {
+    this._id = uniqueId();
     this._context = context;
     this._geometry = geometry;
     this._geometryBuffer = this._context.createBuffer();

@@ -1,5 +1,8 @@
+import { uniqueId } from 'pulsar-pathfinding';
+
 export default class Scene {
   constructor() {
+    this._id = uniqueId();
     this._objects = [];
   }
 

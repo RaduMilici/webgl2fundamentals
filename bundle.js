@@ -18,8 +18,10 @@
     }
     return false;
   };
+  //# sourceMappingURL=id.js.map
 
   const RadToDeg = rad => rad * (180 / Math.PI);
+  //# sourceMappingURL=radDeg.js.map
 
   class Vector {
     constructor({ x, y } = { x: 0, y: 0 }) {
@@ -142,13 +144,16 @@
       return Math.acos(cosAngle);
     }
   }
+  //# sourceMappingURL=Vector.js.map
 
   const randomFloat = (min, max) => {
     return Math.random() * (max - min) + min;
   };
+  //# sourceMappingURL=random.js.map
 
   let id = 0;
   const uniqueId = () => id++;
+  //# sourceMappingURL=uniqueID.js.map
 
   class Matrix2 {
     constructor(a, b, c, d) {
@@ -161,6 +166,7 @@
       return this.a * this.d - this.b * this.c;
     }
   }
+  //# sourceMappingURL=Matrix.js.map
 
   class Clock {
     constructor() {
@@ -190,6 +196,7 @@
       return this.elapsedTime;
     }
   }
+  //# sourceMappingURL=Clock.js.map
 
   class Component {
     constructor() {
@@ -200,6 +207,7 @@
     stop() {}
     update(tickData) {}
   }
+  //# sourceMappingURL=Component.js.map
 
   class EntityUpdater {
     constructor(updater) {
@@ -242,6 +250,7 @@
       });
     }
   }
+  //# sourceMappingURL=EntityUpdater.js.map
 
   class Invoke extends Component {
     constructor(updater, component, timeout) {
@@ -263,6 +272,7 @@
       return this.updater.remove(this);
     }
   }
+  //# sourceMappingURL=Invoke.js.map
 
   class InvokeRepeating extends Invoke {
     constructor(updater, component, interval, times) {
@@ -281,6 +291,7 @@
       }
     }
   }
+  //# sourceMappingURL=InvokeRepeating.js.map
 
   class Updater {
     constructor() {
@@ -389,6 +400,7 @@
       this.onUpdateComplete.update(tickData);
     }
   }
+  //# sourceMappingURL=Updater.js.map
 
   class Renderer {
     constructor({ canvasSelector, size, clearColor }) {
@@ -438,6 +450,7 @@
 
   class Shader {
     constructor({ context, type, source }) {
+      this._id = uniqueId();
       this.context = context;
       this.source = source;
       this.gl_shader = context.createShader(type);
@@ -529,6 +542,7 @@
 
   class Mesh {
     constructor({ context, geometry, vertexShaderSrc, fragmentShaderSrc }) {
+      this._id = uniqueId();
       this._context = context;
       this._geometry = geometry;
       this._geometryBuffer = this._context.createBuffer();
@@ -666,6 +680,7 @@
 
   class Scene {
     constructor() {
+      this._id = uniqueId();
       this._objects = [];
     }
 
