@@ -18,11 +18,9 @@
         }
         return false;
     };
-    //# sourceMappingURL=id.js.map
 
     let id = 0;
     const uniqueId = () => id++;
-    //# sourceMappingURL=uniqueID.js.map
 
     class Clock {
         constructor() {
@@ -52,7 +50,6 @@
             return this.elapsedTime;
         }
     }
-    //# sourceMappingURL=Clock.js.map
 
     class Component {
         constructor() {
@@ -63,7 +60,6 @@
         stop() { }
         update(tickData) { }
     }
-    //# sourceMappingURL=Component.js.map
 
     class EntityUpdater {
         constructor(updater) {
@@ -106,7 +102,6 @@
             });
         }
     }
-    //# sourceMappingURL=EntityUpdater.js.map
 
     class Invoke extends Component {
         constructor(updater, component, timeout) {
@@ -128,7 +123,6 @@
             return this.updater.remove(this);
         }
     }
-    //# sourceMappingURL=Invoke.js.map
 
     class InvokeRepeating extends Invoke {
         constructor(updater, component, interval, times) {
@@ -147,7 +141,6 @@
             }
         }
     }
-    //# sourceMappingURL=InvokeRepeating.js.map
 
     class Updater {
         constructor() {
@@ -260,7 +253,6 @@
             this.onUpdateComplete.update(tickData);
         }
     }
-    //# sourceMappingURL=Updater.js.map
 
     class GlSlider extends HTMLElement {
       constructor() {
@@ -623,6 +615,10 @@
         });
       }
 
+      clear() {
+        this._objects.length = 0;
+      }
+
       contains(object) {
         return this._getChildIndex(object) !== -1;
       }
@@ -719,13 +715,11 @@
         });
 
         this.scene = new Scene();
-        this.scene2 = new Scene();
         this.scene.add(vertexColors);
-        this.scene2.add(sinColors);
       }
 
       update() {
-        this.renderer.render(this.scene, this.scene2);
+        this.renderer.render(this.scene);
       }
     }
 

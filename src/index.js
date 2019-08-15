@@ -33,13 +33,11 @@ class Draw extends Component {
     });
 
     this.scene = new Scene();
-    this.scene2 = new Scene();
     this.scene.add(vertexColors);
-    this.scene2.add(sinColors);
   }
 
   update() {
-    this.renderer.render(this.scene, this.scene2);
+    this.renderer.render(this.scene);
   }
 }
 

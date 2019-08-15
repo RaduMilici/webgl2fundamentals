@@ -21,6 +21,10 @@ export default class Scene {
     });
   }
 
+  clear() {
+    this._objects.length = 0;
+  }
+
   contains(object) {
     return this._getChildIndex(object) !== -1;
   }
