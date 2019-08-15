@@ -1,4 +1,4 @@
-import { Vector } from 'pulsar-pathfinding';
+import { Updater, Component } from 'pulsar-pathfinding';
 import './ui/index';
 import Renderer from './Renderer';
 import vertexColorsFS_Source from './shaders/vertexColors_FS.glsl';
@@ -8,38 +8,42 @@ import Mesh from './Mesh';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
 
-console.log(Vector);
+class Draw extends Component {
+  constructor() {
+    super();
 
-const renderer = new Renderer({
-  canvasSelector: '#webGl',
-  clearColor: { r: 0, g: 0, b: 0, a: 1 },
-  size: { width: 500, height: 500 },
-});
+    this.renderer = new Renderer({
+      canvasSelector: '#webGl',
+      clearColor: { r: 0, g: 0, b: 0, a: 1 },
+      size: { width: 500, height: 500 },
+    });
 
-const { context } = renderer;
+    const vertexColors = new Mesh({
+      context: this.renderer.context,
+      geometry: new Float32Array(randomTris(3)),
+      vertexShaderSrc: vsSource,
+      fragmentShaderSrc: vertexColorsFS_Source,
+    });
 
-const vertexColors = new Mesh({
-  context,
-  geometry: new Float32Array(randomTris(3)),
-  vertexShaderSrc: vsSource,
-  fragmentShaderSrc: vertexColorsFS_Source,
-});
+    const sinColors = new Mesh({
+      context: this.renderer.context,
+      geometry: new Float32Array(randomTris(3)),
+      vertexShaderSrc: vsSource,
+      fragmentShaderSrc: sinColorsFS_Source,
+    });
 
-const sinColors = new Mesh({
-  context,
-  geometry: new Float32Array(randomTris(3)),
-  vertexShaderSrc: vsSource,
-  fragmentShaderSrc: sinColorsFS_Source,
-});
+    this.scene = new Scene();
+    this.scene2 = new Scene();
+    this.scene.add(vertexColors);
+    this.scene2.add(sinColors);
+  }
 
-const scene = new Scene();
-const scene2 = new Scene();
-scene.add(vertexColors);
-scene2.add(sinColors);
+  update() {
+    this.renderer.render(this.scene, this.scene2);
+  }
+}
 
-const drawScene = () => {
-  renderer.render(scene, scene2);
-  requestAnimationFrame(drawScene);
-};
-
-drawScene();
+const updater = new Updater();
+const draw = new Draw();
+updater.add(draw);
+updater.start();
