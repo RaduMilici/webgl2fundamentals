@@ -1,4 +1,4 @@
-import { Updater, Component } from 'pulsar-pathfinding';
+import { Updater, Component, Matrix2 } from 'pulsar-pathfinding';
 import Renderer from './Renderer';
 import vertexColorsFS_Source from './shaders/vertexColors_FS.glsl';
 import sinColorsFS_Source from './shaders/sinColor_FS.glsl';
@@ -6,6 +6,9 @@ import vsSource from './shaders/vertexShader.glsl';
 import Mesh from './Mesh';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
+
+const matrix = new Matrix2(6, 9, 4, 2);
+console.log(matrix.determine());
 
 class Draw extends Component {
   constructor() {

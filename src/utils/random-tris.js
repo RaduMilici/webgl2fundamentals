@@ -1,24 +1,27 @@
+import { Vector, randomFloat } from 'pulsar-pathfinding';
 import Color from '../Color';
-import Vector2 from '../Vector2';
 
 const randomColor = () =>
   new Color({
-    r: random(0, 1),
-    g: random(0, 1),
-    b: random(0, 1),
+    r: randomFloat(0, 1),
+    g: randomFloat(0, 1),
+    b: randomFloat(0, 1),
   });
-const random = (min, max) => Math.random() * (max - min) + min;
+
 const randomTri = () => {
-  const a = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
-  const b = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
-  const c = new Vector2({ x: random(-1, 1), y: random(-1, 1) });
+  const a = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+  const b = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+  const c = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
 
   return [
-    ...a.values,
+    a.x,
+    a.y,
     ...randomColor().values,
-    ...b.values,
+    b.x,
+    b.y,
     ...randomColor().values,
-    ...c.values,
+    c.x,
+    c.y,
     ...randomColor().values,
   ];
 };
