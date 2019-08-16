@@ -29,6 +29,7 @@ export default class Mesh {
 
     this._position = [0, 0];
     this._rotation = [0, 1];
+    this._scale = [1, 1];
   }
 
   get position() {
@@ -38,20 +39,30 @@ export default class Mesh {
     };
   }
 
+  get scale() {
+    return {
+      x: this._scale[0],
+      y: this._scale[1],
+    };
+  }
+
   set position({ x, y }) {
     this._position[0] = x;
     this._position[1] = y;
-    this._setPosition();
   }
 
   set rotation(radians) {
     this._rotation[0] = Math.sin(radians);
     this._rotation[1] = Math.cos(radians);
-    this._setRotation();
   }
 
-  render() {
-    this._useProgram();
+  set scale({ x, y }) {
+    this._scale[0] = x;
+    this._scale[1] = y;
+  }
+
+  _renderImmediate() {
+    this._context.useProgram(this._program.gl_program);
     this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
     this._context.bufferData(
       this._context.ARRAY_BUFFER,
@@ -60,26 +71,26 @@ export default class Mesh {
     );
     this._enableAttribs();
     this._setValues();
+    this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
+    this._context.useProgram(null);
   }
 
   _setValues() {
-    this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
+    this._setScale();
     this._setPosition();
     this._setRotation();
   }
 
   _setRotation() {
-    this._useProgram();
     this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array(this._rotation));
   }
 
   _setPosition() {
-    this._useProgram();
     this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array(this._position));
   }
 
-  _useProgram() {
-    this._context.useProgram(this._program.gl_program);
+  _setScale() {
+    this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array(this._scale));
   }
 
   _enableAttribs() {

@@ -30,7 +30,6 @@ export default class Renderer {
 
   render(...scenes) {
     this.clear();
-    scenes.forEach(scene => scene.render(this.context));
-    this.context.useProgram(null);
+    scenes.forEach(scene => scene._renderChildren());
   }
 }

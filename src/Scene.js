@@ -32,11 +32,8 @@ export default class Scene {
     return this._getChildIndex(object) !== -1;
   }
 
-  render(context) {
-    this._objects.forEach(child => {
-      child.render();
-      context.drawArrays(context.TRIANGLES, 0, child._geometry.vertices.length);
-    });
+  _renderChildren() {
+    this._objects.forEach(child => child._renderImmediate());
   }
 
   _getChildIndex(object) {

@@ -693,8 +693,7 @@
 
       render(...scenes) {
         this.clear();
-        scenes.forEach(scene => scene.render(this.context));
-        this.context.useProgram(null);
+        scenes.forEach(scene => scene._renderChildren());
       }
     }
 
@@ -842,6 +841,7 @@
 
         this._position = [0, 0];
         this._rotation = [0, 1];
+        this._scale = [1, 1];
       }
 
       get position() {
@@ -851,20 +851,30 @@
         };
       }
 
+      get scale() {
+        return {
+          x: this._scale[0],
+          y: this._scale[1],
+        };
+      }
+
       set position({ x, y }) {
         this._position[0] = x;
         this._position[1] = y;
-        this._setPosition();
       }
 
       set rotation(radians) {
         this._rotation[0] = Math.sin(radians);
         this._rotation[1] = Math.cos(radians);
-        this._setRotation();
       }
 
-      render() {
-        this._useProgram();
+      set scale({ x, y }) {
+        this._scale[0] = x;
+        this._scale[1] = y;
+      }
+
+      _renderImmediate() {
+        this._context.useProgram(this._program.gl_program);
         this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
         this._context.bufferData(
           this._context.ARRAY_BUFFER,
@@ -873,26 +883,26 @@
         );
         this._enableAttribs();
         this._setValues();
+        this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
+        this._context.useProgram(null);
       }
 
       _setValues() {
-        this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
+        this._setScale();
         this._setPosition();
         this._setRotation();
       }
 
       _setRotation() {
-        this._useProgram();
         this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array(this._rotation));
       }
 
       _setPosition() {
-        this._useProgram();
         this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array(this._position));
       }
 
-      _useProgram() {
-        this._context.useProgram(this._program.gl_program);
+      _setScale() {
+        this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array(this._scale));
       }
 
       _enableAttribs() {
@@ -971,11 +981,8 @@
         return this._getChildIndex(object) !== -1;
       }
 
-      render(context) {
-        this._objects.forEach(child => {
-          child.render();
-          context.drawArrays(context.TRIANGLES, 0, child._geometry.vertices.length);
-        });
+      _renderChildren() {
+        this._objects.forEach(child => child._renderImmediate());
       }
 
       _getChildIndex(object) {
@@ -997,6 +1004,18 @@
       return tris;
     };
 
+    class RotatingMesh extends Mesh {
+      constructor(data) {
+        super(data);
+      }
+
+      update({ elapsedTime }) {
+        this.rotation = elapsedTime * 0.5;
+        //const scale = Math.abs(Math.sin(elapsedTime));
+        //this.scale = { x: scale, y: scale };
+      }
+    }
+
     class Draw extends Component {
       constructor() {
         super();
@@ -1007,18 +1026,19 @@
           size: { width: 500, height: 500 },
         });
 
-        const mesh = new Mesh({
+        this.mesh = new RotatingMesh({
           context: this.renderer.context,
-          geometry: new Geometry(randomTris(2)),
+          geometry: new Geometry(randomTris(10)),
           vertexShaderSrc: vsSource,
           fragmentShaderSrc: sinColorsFS_Source,
         });
 
         this.scene = new Scene();
-        this.scene.add(mesh);
+        this.scene.add(this.mesh);
       }
 
-      update() {
+      update(timeData) {
+        this.mesh.update(timeData);
         this.renderer.render(this.scene);
       }
     }
