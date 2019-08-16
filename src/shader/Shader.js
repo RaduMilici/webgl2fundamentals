@@ -2,7 +2,7 @@ import { uniqueId } from 'pulsar-pathfinding';
 
 export default class Shader {
   constructor({ context, type, source }) {
-    this._id = uniqueId();
+    this.id = uniqueId();
     this.context = context;
     this.source = source;
     this.gl_shader = context.createShader(type);
