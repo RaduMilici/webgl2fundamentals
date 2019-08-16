@@ -1,9 +1,10 @@
 import { Updater, Component } from 'pulsar-pathfinding';
 import Renderer from './Renderer';
 import Geometry from './Geometry';
-import sinColorsFS_Source from './shaders/sinColor_FS.glsl';
+import fsSource from './shaders/sinColor_FS.glsl';
 import vsSource from './shaders/vertexShader.glsl';
 import Mesh from './Mesh';
+import Material from './Material';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
 
@@ -14,8 +15,6 @@ class RotatingMesh extends Mesh {
 
   update({ elapsedTime }) {
     this.rotation = elapsedTime * 0.5;
-    //const scale = Math.abs(Math.sin(elapsedTime));
-    //this.scale = { x: scale, y: scale };
   }
 }
 
@@ -29,11 +28,16 @@ class Draw extends Component {
       size: { width: 500, height: 500 },
     });
 
+    const material = new Material({
+      context: this.renderer.context,
+      vertexShaderSrc: vsSource,
+      fragmentShaderSrc: fsSource,
+    });
+
     this.mesh = new RotatingMesh({
       context: this.renderer.context,
       geometry: new Geometry(randomTris(10)),
-      vertexShaderSrc: vsSource,
-      fragmentShaderSrc: sinColorsFS_Source,
+      material,
     });
 
     this.scene = new Scene();
@@ -50,4 +54,10 @@ const updater = new Updater();
 const draw = new Draw();
 
 updater.add(draw);
-updater.start();
+
+try {
+  updater.start();
+} catch (e) {
+  console.error(e);
+  updater.stop();
+}

@@ -721,7 +721,7 @@
       }
     }
 
-    var sinColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){float x=sin(gl_FragCoord.x*0.05);float y=sin(gl_FragCoord.y*0.05);color=vec4(vec3(0.,fract(x*y),0.),1.);}";
+    var fsSource = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec2 xy=sin(gl_FragCoord.xy*0.05);float g=fract(xy.x*xy.y);color=vec4(0.,g,0.,1.);}";
 
     var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
@@ -815,33 +815,15 @@
     }
 
     class Mesh {
-      constructor({ context, geometry, vertexShaderSrc, fragmentShaderSrc }) {
+      constructor({ context, geometry, material }) {
         this.id = uniqueId();
         this._context = context;
         this._geometry = geometry;
+        this._material = material;
         this._geometryBuffer = this._context.createBuffer();
-
-        const { vertexShader, fragmentShader } = this._compileShders({
-          context,
-          vertexShaderSrc,
-          fragmentShaderSrc,
-        });
-
-        this._vertexShader = vertexShader;
-        this._fragmentShader = fragmentShader;
-        this._program = new Program({
-          context: this._context,
-          vertexShader: this._vertexShader,
-          fragmentShader: this._fragmentShader,
-          debug: true,
-        });
-
-        this._attributes = this._getAttributes();
-        this._uniforms = this._getUniforms();
-
-        this._position = [0, 0];
-        this._rotation = [0, 1];
-        this._scale = [1, 1];
+        this._position = new Float32Array([0, 0]);
+        this._rotation = new Float32Array([0, 1]);
+        this._scale = new Float32Array([1, 1]);
       }
 
       get position() {
@@ -859,29 +841,26 @@
       }
 
       set position({ x, y }) {
-        this._position[0] = x;
-        this._position[1] = y;
+        this.position = new Float32Array([x, y]);
       }
 
       set rotation(radians) {
-        this._rotation[0] = Math.sin(radians);
-        this._rotation[1] = Math.cos(radians);
+        this._rotation = new Float32Array([Math.sin(radians), Math.cos(radians)]);
       }
 
       set scale({ x, y }) {
-        this._scale[0] = x;
-        this._scale[1] = y;
+        this._scale = new Float32Array([x, y]);
       }
 
       _renderImmediate() {
-        this._context.useProgram(this._program.gl_program);
+        this._context.useProgram(this._material._program.gl_program);
         this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
         this._context.bufferData(
           this._context.ARRAY_BUFFER,
           this._geometry._vertexCoords,
           this._context.STATIC_DRAW
         );
-        this._enableAttribs();
+        this._material._enableAttribs();
         this._setValues();
         this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
         this._context.useProgram(null);
@@ -894,15 +873,47 @@
       }
 
       _setRotation() {
-        this._context.uniform2fv(this._uniforms.uRotationLoc, new Float32Array(this._rotation));
+        this._context.uniform2fv(this._material._uniforms.uRotationLoc, this._rotation);
       }
 
       _setPosition() {
-        this._context.uniform2fv(this._uniforms.uTranslationLoc, new Float32Array(this._position));
+        this._context.uniform2fv(this._material._uniforms.uTranslationLoc, this._position);
       }
 
       _setScale() {
-        this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array(this._scale));
+        this._context.uniform2fv(this._material._uniforms.uScaleLoc, this._scale);
+      }
+    }
+
+    class Material {
+      constructor({ context, vertexShaderSrc, fragmentShaderSrc }) {
+        this.id = uniqueId();
+        this._context = context;
+
+        const { vertexShader, fragmentShader } = this._compileShders({
+          context: this._context,
+          vertexShaderSrc,
+          fragmentShaderSrc,
+        });
+        
+        this._vertexShader = vertexShader;
+        this._fragmentShader = fragmentShader;
+
+        this._program = new Program({
+          context: this._context,
+          vertexShader: this._vertexShader,
+          fragmentShader: this._fragmentShader,
+          debug: true,
+        });
+
+        this._attributes = this._getAttributes();
+        this._uniforms = this._getUniforms();
+      }
+
+      _compileShders({ context, vertexShaderSrc, fragmentShaderSrc }) {
+        const vertexShader = new VertexShader({ context, source: vertexShaderSrc });
+        const fragmentShader = new FragmentShader({ context, source: fragmentShaderSrc });
+        return { vertexShader, fragmentShader };
       }
 
       _enableAttribs() {
@@ -918,26 +929,17 @@
         );
       }
 
-      _compileShders({ context, vertexShaderSrc, fragmentShaderSrc }) {
-        const vertexShader = new VertexShader({ context, source: vertexShaderSrc });
-        const fragmentShader = new FragmentShader({ context, source: fragmentShaderSrc });
-        return { vertexShader, fragmentShader };
-      }
-
       _getAttributes() {
         const aPositionLoc = this._getAttribLocation('a_position');
-        const aVertColorLoc = this._getAttribLocation('a_vertColor');
-
-        return { aPositionLoc, aVertColorLoc };
+        return { aPositionLoc };
       }
 
       _getUniforms() {
-        const uPointSizeLoc = this._getUniformLocation('u_pointSize');
         const uTranslationLoc = this._getUniformLocation('u_translation');
         const uScaleLoc = this._getUniformLocation('u_scale');
         const uRotationLoc = this._getUniformLocation('u_rotation');
 
-        return { uPointSizeLoc, uTranslationLoc, uScaleLoc, uRotationLoc };
+        return { uTranslationLoc, uScaleLoc, uRotationLoc };
       }
 
       _getAttribLocation(name) {
@@ -957,30 +959,19 @@
 
       add(...objects) {
         objects.forEach(object => {
-          if (!this.contains(object)) {
+          if (!contains(this._objects, object)) {
             this._objects.push(object);
           }
         });
       }
 
       remove(...objects) {
-        objects.forEach(object => {
-          const index = this._getChildIndex(object);
-
-          if (index !== -1) {
-            this._objects.splice(index, 1);
-          }
-        });
+        objects.forEach(object => removeFromArray(this._objects, object));
       }
 
       clear() {
         this._objects.length = 0;
       }
-
-      contains(object) {
-        return this._getChildIndex(object) !== -1;
-      }
-
       _renderChildren() {
         this._objects.forEach(child => child._renderImmediate());
       }
@@ -1011,8 +1002,6 @@
 
       update({ elapsedTime }) {
         this.rotation = elapsedTime * 0.5;
-        //const scale = Math.abs(Math.sin(elapsedTime));
-        //this.scale = { x: scale, y: scale };
       }
     }
 
@@ -1026,11 +1015,16 @@
           size: { width: 500, height: 500 },
         });
 
+        const material = new Material({
+          context: this.renderer.context,
+          vertexShaderSrc: vsSource,
+          fragmentShaderSrc: fsSource,
+        });
+
         this.mesh = new RotatingMesh({
           context: this.renderer.context,
           geometry: new Geometry(randomTris(10)),
-          vertexShaderSrc: vsSource,
-          fragmentShaderSrc: sinColorsFS_Source,
+          material,
         });
 
         this.scene = new Scene();
@@ -1047,6 +1041,12 @@
     const draw = new Draw();
 
     updater.add(draw);
-    updater.start();
+
+    try {
+      updater.start();
+    } catch (e) {
+      console.error(e);
+      updater.stop();
+    }
 
 }());

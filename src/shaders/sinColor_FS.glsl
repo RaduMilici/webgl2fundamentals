@@ -5,7 +5,7 @@ out vec4 color;
 in vec3 fragColor;
 
 void main() {
-  float x = sin(gl_FragCoord.x * 0.05);
-  float y = sin(gl_FragCoord.y * 0.05);
-  color = vec4(vec3(0., fract(x * y), 0.), 1.);
+  vec2 xy = sin(gl_FragCoord.xy * 0.05);
+  float g = fract(xy.x * xy.y);
+  color = vec4(0., g, 0., 1.);
 }

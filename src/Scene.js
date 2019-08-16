@@ -1,4 +1,4 @@
-import { uniqueId } from 'pulsar-pathfinding';
+import { uniqueId, contains, removeFromArray } from 'pulsar-pathfinding';
 
 export default class Scene {
   constructor() {
@@ -8,30 +8,19 @@ export default class Scene {
 
   add(...objects) {
     objects.forEach(object => {
-      if (!this.contains(object)) {
+      if (!contains(this._objects, object)) {
         this._objects.push(object);
       }
     });
   }
 
   remove(...objects) {
-    objects.forEach(object => {
-      const index = this._getChildIndex(object);
-
-      if (index !== -1) {
-        this._objects.splice(index, 1);
-      }
-    });
+    objects.forEach(object => removeFromArray(this._objects, object));
   }
 
   clear() {
     this._objects.length = 0;
   }
-
-  contains(object) {
-    return this._getChildIndex(object) !== -1;
-  }
-
   _renderChildren() {
     this._objects.forEach(child => child._renderImmediate());
   }
