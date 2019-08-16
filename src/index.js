@@ -4,9 +4,12 @@ import Geometry from './Geometry';
 import fsSource from './shaders/sinColor_FS.glsl';
 import vsSource from './shaders/vertexShader.glsl';
 import Mesh from './Mesh';
-import Material from './Material';
+import Material from './material/Material';
+import BasicMaterial from './material/BasicMaterial';
+import Color from './Color';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
+import randomColor from './utils/random-color';
 
 class RotatingMesh extends Mesh {
   constructor(data) {
@@ -34,18 +37,29 @@ class Draw extends Component {
       fragmentShaderSrc: fsSource,
     });
 
+    this.basicMaterial = new BasicMaterial({
+      context: this.renderer.context,
+    });
+
     this.mesh = new RotatingMesh({
       context: this.renderer.context,
-      geometry: new Geometry(randomTris(10)),
+      geometry: new Geometry(randomTris(3)),
       material,
     });
 
+    this.basicMesh = new RotatingMesh({
+      context: this.renderer.context,
+      geometry: new Geometry(randomTris(3)),
+      material: this.basicMaterial,
+    });
+
     this.scene = new Scene();
-    this.scene.add(this.mesh);
+    this.scene.add(this.mesh, this.basicMesh);
   }
 
   update(timeData) {
     this.mesh.update(timeData);
+    this.basicMesh.update(timeData);
     this.renderer.render(this.scene);
   }
 }

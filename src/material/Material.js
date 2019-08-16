@@ -1,6 +1,6 @@
 import { uniqueId } from 'pulsar-pathfinding';
-import { VertexShader, FragmentShader } from './shader/index';
-import Program from './Program';
+import { VertexShader, FragmentShader } from '../shader/index';
+import Program from '../Program';
 
 export default class Material {
   constructor({ context, vertexShaderSrc, fragmentShaderSrc }) {

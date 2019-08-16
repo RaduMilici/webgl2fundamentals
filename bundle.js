@@ -951,6 +951,61 @@
       }
     }
 
+    var fragmentShaderSrc = "#version 300 es\nprecision mediump float;uniform vec3 u_color;out vec4 frag_color;void main(){frag_color=vec4(u_color,1.);}";
+
+    class Color {
+      constructor({ r, g, b }) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+      }
+
+      get values() {
+        return new Float32Array([this.r, this.g, this.b]);
+      }
+    }
+
+    const randomColor = () => {
+      const r = randomFloat(0, 1);
+      const g = randomFloat(0, 1);
+      const b = randomFloat(0, 1);
+
+      return new Color({ r, g, b });
+    };
+
+    class BasicMaterial extends Material {
+      constructor({ context }) {
+        super({ context, vertexShaderSrc: vsSource, fragmentShaderSrc });
+        this._color = randomColor().values;
+        this._setColor();
+      }
+
+      get color() {
+        const r = this._color[0];
+        const g = this._color[1];
+        const b = this._color[2];
+        return new Color({ r, g, b });
+      }
+
+      set color({ r, g, b }) {
+        this._color = new Float32Array([r, g, b]);
+        this._setColor();
+      }
+
+      _setColor() {
+        this._context.useProgram(this._program.gl_program);
+        this._context.uniform3fv(this._uniforms.uColorLoc, this._color);
+        this._context.useProgram(null);
+      }
+
+      _getUniforms() {
+        return {
+          ...super._getUniforms(),
+          uColorLoc: this._getUniformLocation('u_color'),
+        };
+      }
+    }
+
     class Scene {
       constructor() {
         this.id = uniqueId();
@@ -1021,18 +1076,29 @@
           fragmentShaderSrc: fsSource,
         });
 
+        this.basicMaterial = new BasicMaterial({
+          context: this.renderer.context,
+        });
+
         this.mesh = new RotatingMesh({
           context: this.renderer.context,
-          geometry: new Geometry(randomTris(10)),
+          geometry: new Geometry(randomTris(3)),
           material,
         });
 
+        this.basicMesh = new RotatingMesh({
+          context: this.renderer.context,
+          geometry: new Geometry(randomTris(3)),
+          material: this.basicMaterial,
+        });
+
         this.scene = new Scene();
-        this.scene.add(this.mesh);
+        this.scene.add(this.mesh, this.basicMesh);
       }
 
       update(timeData) {
         this.mesh.update(timeData);
+        this.basicMesh.update(timeData);
         this.renderer.render(this.scene);
       }
     }

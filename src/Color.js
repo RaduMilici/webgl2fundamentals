@@ -6,6 +6,6 @@ export default class Color {
   }
 
   get values() {
-    return [this.r, this.g, this.b];
+    return new Float32Array([this.r, this.g, this.b]);
   }
 }
