@@ -35,7 +35,7 @@ export default class Scene {
   render(context) {
     this._objects.forEach(child => {
       child.render();
-      context.drawArrays(context.TRIANGLES, 0, child.vertCount);
+      context.drawArrays(context.TRIANGLES, 0, child._geometry.vertices.length);
     });
   }
 

@@ -698,7 +698,31 @@
       }
     }
 
-    var sinColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec3 sinColor=vec3(0.,sin(gl_FragCoord.x*0.5),0.);color=vec4(sinColor,1.);}";
+    class Geometry {
+      constructor(triangles) {
+        this._triangles = triangles;
+        this.vertices = this._getVertices();
+        this._vertexCoords = this._getVertexCoords();
+      }
+
+      _getVertices() {
+        return this._triangles.reduce((acc, triangle) => {
+          acc.push(...triangle.points);
+          return acc;
+        }, []);
+      }
+
+      _getVertexCoords() {
+        const coords = this.vertices.reduce((acc, { x, y }) => {
+          acc.push(x, y);
+          return acc;
+        }, []);
+
+        return new Float32Array(coords);
+      }
+    }
+
+    var sinColorsFS_Source = "#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){float x=sin(gl_FragCoord.x*0.05);float y=sin(gl_FragCoord.y*0.05);color=vec4(vec3(0.,fract(x*y),0.),1.);}";
 
     var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
@@ -820,10 +844,6 @@
         this._rotation = [0, 1];
       }
 
-      get vertCount() {
-        return this._geometry.length / 5;
-      }
-
       get position() {
         return {
           x: this._position[0],
@@ -846,7 +866,11 @@
       render() {
         this._useProgram();
         this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
-        this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
+        this._context.bufferData(
+          this._context.ARRAY_BUFFER,
+          this._geometry._vertexCoords,
+          this._context.STATIC_DRAW
+        );
         this._enableAttribs();
         this._setValues();
       }
@@ -855,7 +879,6 @@
         this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
         this._setPosition();
         this._setRotation();
-        //this._context.uniform1f(this._uniforms.uPointSizeLoc, 30);
       }
 
       _setRotation() {
@@ -874,23 +897,14 @@
 
       _enableAttribs() {
         this._context.enableVertexAttribArray(this._attributes.aPositionLoc);
-        this._context.enableVertexAttribArray(this._attributes.aVertColorLoc);
 
         this._context.vertexAttribPointer(
           this._attributes.aPositionLoc,
           2,
           this._context.FLOAT,
           this._context.FALSE,
-          5 * Float32Array.BYTES_PER_ELEMENT,
-          0
-        );
-        this._context.vertexAttribPointer(
-          this._attributes.aVertColorLoc,
-          3,
-          this._context.FLOAT,
-          this._context.FALSE,
           0,
-          2 * Float32Array.BYTES_PER_ELEMENT
+          0
         );
       }
 
@@ -960,7 +974,7 @@
       render(context) {
         this._objects.forEach(child => {
           child.render();
-          context.drawArrays(context.TRIANGLES, 0, child.vertCount);
+          context.drawArrays(context.TRIANGLES, 0, child._geometry.vertices.length);
         });
       }
 
@@ -969,48 +983,15 @@
       }
     }
 
-    class Color {
-      constructor({ r, g, b }) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-      }
-
-      get values() {
-        return [this.r, this.g, this.b];
-      }
-    }
-
-    const randomColor = () =>
-      new Color({
-        r: randomFloat(0, 1),
-        g: randomFloat(0, 1),
-        b: randomFloat(0, 1),
-      });
-
-    const randomTri = () => {
-      const a = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
-      const b = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
-      const c = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
-
-      return [
-        a.x,
-        a.y,
-        ...randomColor().values,
-        b.x,
-        b.y,
-        ...randomColor().values,
-        c.x,
-        c.y,
-        ...randomColor().values,
-      ];
-    };
-
     const randomTris = num => {
       const tris = [];
 
       for (let i = 0; i < num; i++) {
-        tris.push(...randomTri());
+        const a = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+        const b = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+        const c = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+        const triangle = new Triangle(a, b, c);
+        tris.push(triangle);
       }
 
       return tris;
@@ -1020,36 +1001,24 @@
       constructor() {
         super();
 
-        const a = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
-        const b = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
-        const c = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
-        const triangle = new Triangle(a, b, c);
-
         this.renderer = new Renderer({
           canvasSelector: '#webGl',
           clearColor: { r: 0, g: 0, b: 0, a: 1 },
           size: { width: 500, height: 500 },
         });
 
-        /*const vertexColors = new Mesh({
+        const mesh = new Mesh({
           context: this.renderer.context,
-          geometry: new Float32Array(randomTris(3)),
-          vertexShaderSrc: vsSource,
-          fragmentShaderSrc: vertexColorsFS_Source,
-        });*/
-
-        const sinColors = new Mesh({
-          context: this.renderer.context,
-          geometry: new Float32Array(randomTris(3)),
+          geometry: new Geometry(randomTris(2)),
           vertexShaderSrc: vsSource,
           fragmentShaderSrc: sinColorsFS_Source,
-        });    
+        });
 
         this.scene = new Scene();
-        this.scene.add(sinColors);
+        this.scene.add(mesh);
       }
 
-      update() {  
+      update() {
         this.renderer.render(this.scene);
       }
     }
@@ -1059,6 +1028,5 @@
 
     updater.add(draw);
     updater.start();
-    updater.stop();
 
 }());

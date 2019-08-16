@@ -31,10 +31,6 @@ export default class Mesh {
     this._rotation = [0, 1];
   }
 
-  get vertCount() {
-    return this._geometry.length / 5;
-  }
-
   get position() {
     return {
       x: this._position[0],
@@ -57,7 +53,11 @@ export default class Mesh {
   render() {
     this._useProgram();
     this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
-    this._context.bufferData(this._context.ARRAY_BUFFER, this._geometry, this._context.STATIC_DRAW);
+    this._context.bufferData(
+      this._context.ARRAY_BUFFER,
+      this._geometry._vertexCoords,
+      this._context.STATIC_DRAW
+    );
     this._enableAttribs();
     this._setValues();
   }
@@ -66,7 +66,6 @@ export default class Mesh {
     this._context.uniform2fv(this._uniforms.uScaleLoc, new Float32Array([1, 1]));
     this._setPosition();
     this._setRotation();
-    //this._context.uniform1f(this._uniforms.uPointSizeLoc, 30);
   }
 
   _setRotation() {
@@ -85,23 +84,14 @@ export default class Mesh {
 
   _enableAttribs() {
     this._context.enableVertexAttribArray(this._attributes.aPositionLoc);
-    this._context.enableVertexAttribArray(this._attributes.aVertColorLoc);
 
     this._context.vertexAttribPointer(
       this._attributes.aPositionLoc,
       2,
       this._context.FLOAT,
       this._context.FALSE,
-      5 * Float32Array.BYTES_PER_ELEMENT,
-      0
-    );
-    this._context.vertexAttribPointer(
-      this._attributes.aVertColorLoc,
-      3,
-      this._context.FLOAT,
-      this._context.FALSE,
       0,
-      2 * Float32Array.BYTES_PER_ELEMENT
+      0
     );
   }
 
