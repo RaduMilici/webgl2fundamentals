@@ -18,8 +18,8 @@ export default class BasicMaterial extends Material {
     return new Color({ r, g, b });
   }
 
-  set color({ r, g, b }) {
-    this._color = new Float32Array([r, g, b]);
+  set color({ values }) {
+    this._color = values;
     this._setColor();
   }
 

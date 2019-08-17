@@ -725,6 +725,93 @@
 
     var vsSource = "#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}";
 
+    class Mesh {
+      constructor({ context, geometry, material }) {
+        this.id = uniqueId();
+        this._context = context;
+        this._geometry = geometry;
+        this._material = material;
+        this._geometryBuffer = this._context.createBuffer();
+        this._position = new Float32Array([0, 0]);
+        this._rotation = new Float32Array([0, 1]);
+        this._scale = new Float32Array([1, 1]);
+        this._updateQ = [];
+        this._init();
+      }
+
+      get position() {
+        return {
+          x: this._position[0],
+          y: this._position[1],
+        };
+      }
+
+      get scale() {
+        return {
+          x: this._scale[0],
+          y: this._scale[1],
+        };
+      }
+
+      set position({ x, y }) {
+        this._position = new Float32Array([x, y]);
+        this._addUpdate(() => this._setPositionUniform());
+      }
+
+      set rotation(radians) {
+        this._rotation = new Float32Array([Math.sin(radians), Math.cos(radians)]);
+        this._addUpdate(() => this._setRotationUniform());
+      }
+
+      set scale({ x, y }) {
+        this._scale = new Float32Array([x, y]);
+        this._addUpdate(() => this._setScaleUniform());
+      }
+
+      _init() {
+        this._context.useProgram(this._material._program.gl_program);
+        this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
+        this._setScaleUniform();
+        this._setPositionUniform();
+        this._setRotationUniform();
+      }
+
+      _renderImmediate() {
+        this._context.useProgram(this._material._program.gl_program);
+        this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
+        this._context.bufferData(
+          this._context.ARRAY_BUFFER,
+          this._geometry._vertexCoords,
+          this._context.STATIC_DRAW
+        );
+        this._material._enableAttribs();
+        this._update();
+        this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
+        this._context.useProgram(null);
+      }
+
+      _setRotationUniform() {
+        this._context.uniform2fv(this._material._uniforms.uRotationLoc, this._rotation);
+      }
+
+      _setPositionUniform() {
+        this._context.uniform2fv(this._material._uniforms.uTranslationLoc, this._position);
+      }
+
+      _setScaleUniform() {
+        this._context.uniform2fv(this._material._uniforms.uScaleLoc, this._scale);
+      }
+
+      _addUpdate(callback) {
+        this._updateQ.push(callback);
+      }
+
+      _update() {
+        this._updateQ.forEach(update => update());
+        this._updateQ.length = 0;
+      }
+    }
+
     class Shader {
       constructor({ context, type, source }) {
         this.id = uniqueId();
@@ -811,77 +898,6 @@
           this.context.deleteProgram(this.gl_program);
           throw infoLog;
         }
-      }
-    }
-
-    class Mesh {
-      constructor({ context, geometry, material }) {
-        this.id = uniqueId();
-        this._context = context;
-        this._geometry = geometry;
-        this._material = material;
-        this._geometryBuffer = this._context.createBuffer();
-        this._position = new Float32Array([0, 0]);
-        this._rotation = new Float32Array([0, 1]);
-        this._scale = new Float32Array([1, 1]);
-      }
-
-      get position() {
-        return {
-          x: this._position[0],
-          y: this._position[1],
-        };
-      }
-
-      get scale() {
-        return {
-          x: this._scale[0],
-          y: this._scale[1],
-        };
-      }
-
-      set position({ x, y }) {
-        this.position = new Float32Array([x, y]);
-      }
-
-      set rotation(radians) {
-        this._rotation = new Float32Array([Math.sin(radians), Math.cos(radians)]);
-      }
-
-      set scale({ x, y }) {
-        this._scale = new Float32Array([x, y]);
-      }
-
-      _renderImmediate() {
-        this._context.useProgram(this._material._program.gl_program);
-        this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
-        this._context.bufferData(
-          this._context.ARRAY_BUFFER,
-          this._geometry._vertexCoords,
-          this._context.STATIC_DRAW
-        );
-        this._material._enableAttribs();
-        this._setValues();
-        this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
-        this._context.useProgram(null);
-      }
-
-      _setValues() {
-        this._setScale();
-        this._setPosition();
-        this._setRotation();
-      }
-
-      _setRotation() {
-        this._context.uniform2fv(this._material._uniforms.uRotationLoc, this._rotation);
-      }
-
-      _setPosition() {
-        this._context.uniform2fv(this._material._uniforms.uTranslationLoc, this._position);
-      }
-
-      _setScale() {
-        this._context.uniform2fv(this._material._uniforms.uScaleLoc, this._scale);
       }
     }
 
@@ -987,8 +1003,8 @@
         return new Color({ r, g, b });
       }
 
-      set color({ r, g, b }) {
-        this._color = new Float32Array([r, g, b]);
+      set color({ values }) {
+        this._color = values;
         this._setColor();
       }
 
@@ -1051,11 +1067,9 @@
     };
 
     class RotatingMesh extends Mesh {
-      constructor(data) {
-        super(data);
-      }
-
       update({ elapsedTime }) {
+        const posX = Math.sin(elapsedTime);
+        this.position = new Vector({ x: posX, y: posX });
         this.rotation = elapsedTime * 0.5;
       }
     }
@@ -1076,9 +1090,10 @@
           fragmentShaderSrc: fsSource,
         });
 
-        this.basicMaterial = new BasicMaterial({
+        const basicMaterial = new BasicMaterial({
           context: this.renderer.context,
         });
+        basicMaterial.color = new Color({ r: 0, g: 1, b: 0 });
 
         this.mesh = new RotatingMesh({
           context: this.renderer.context,
@@ -1089,7 +1104,7 @@
         this.basicMesh = new RotatingMesh({
           context: this.renderer.context,
           geometry: new Geometry(randomTris(3)),
-          material: this.basicMaterial,
+          material: basicMaterial,
         });
 
         this.scene = new Scene();

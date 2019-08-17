@@ -1,6 +1,4 @@
 import { uniqueId } from 'pulsar-pathfinding';
-import { VertexShader, FragmentShader } from './shader/index';
-import Program from './Program';
 
 export default class Mesh {
   constructor({ context, geometry, material }) {
@@ -12,6 +10,8 @@ export default class Mesh {
     this._position = new Float32Array([0, 0]);
     this._rotation = new Float32Array([0, 1]);
     this._scale = new Float32Array([1, 1]);
+    this._updateQ = [];
+    this._init();
   }
 
   get position() {
@@ -29,15 +29,26 @@ export default class Mesh {
   }
 
   set position({ x, y }) {
-    this.position = new Float32Array([x, y]);
+    this._position = new Float32Array([x, y]);
+    this._addUpdate(() => this._setPositionUniform());
   }
 
   set rotation(radians) {
     this._rotation = new Float32Array([Math.sin(radians), Math.cos(radians)]);
+    this._addUpdate(() => this._setRotationUniform());
   }
 
   set scale({ x, y }) {
     this._scale = new Float32Array([x, y]);
+    this._addUpdate(() => this._setScaleUniform());
+  }
+
+  _init() {
+    this._context.useProgram(this._material._program.gl_program);
+    this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
+    this._setScaleUniform();
+    this._setPositionUniform();
+    this._setRotationUniform();
   }
 
   _renderImmediate() {
@@ -49,26 +60,29 @@ export default class Mesh {
       this._context.STATIC_DRAW
     );
     this._material._enableAttribs();
-    this._setValues();
+    this._update();
     this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
     this._context.useProgram(null);
   }
 
-  _setValues() {
-    this._setScale();
-    this._setPosition();
-    this._setRotation();
-  }
-
-  _setRotation() {
+  _setRotationUniform() {
     this._context.uniform2fv(this._material._uniforms.uRotationLoc, this._rotation);
   }
 
-  _setPosition() {
+  _setPositionUniform() {
     this._context.uniform2fv(this._material._uniforms.uTranslationLoc, this._position);
   }
 
-  _setScale() {
+  _setScaleUniform() {
     this._context.uniform2fv(this._material._uniforms.uScaleLoc, this._scale);
+  }
+
+  _addUpdate(callback) {
+    this._updateQ.push(callback);
+  }
+
+  _update() {
+    this._updateQ.forEach(update => update());
+    this._updateQ.length = 0;
   }
 }

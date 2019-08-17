@@ -1,4 +1,4 @@
-import { Updater, Component } from 'pulsar-pathfinding';
+import { Updater, Component, Vector } from 'pulsar-pathfinding';
 import Renderer from './Renderer';
 import Geometry from './Geometry';
 import fsSource from './shaders/sinColor_FS.glsl';
@@ -6,17 +6,14 @@ import vsSource from './shaders/vertexShader.glsl';
 import Mesh from './Mesh';
 import Material from './material/Material';
 import BasicMaterial from './material/BasicMaterial';
-import Color from './Color';
 import Scene from './Scene';
 import randomTris from './utils/random-tris';
-import randomColor from './utils/random-color';
+import Color from './Color';
 
 class RotatingMesh extends Mesh {
-  constructor(data) {
-    super(data);
-  }
-
   update({ elapsedTime }) {
+    const posX = Math.sin(elapsedTime);
+    this.position = new Vector({ x: posX, y: posX });
     this.rotation = elapsedTime * 0.5;
   }
 }
@@ -37,9 +34,10 @@ class Draw extends Component {
       fragmentShaderSrc: fsSource,
     });
 
-    this.basicMaterial = new BasicMaterial({
+    const basicMaterial = new BasicMaterial({
       context: this.renderer.context,
     });
+    basicMaterial.color = new Color({ r: 0, g: 1, b: 0 });
 
     this.mesh = new RotatingMesh({
       context: this.renderer.context,
@@ -50,7 +48,7 @@ class Draw extends Component {
     this.basicMesh = new RotatingMesh({
       context: this.renderer.context,
       geometry: new Geometry(randomTris(3)),
-      material: this.basicMaterial,
+      material: basicMaterial,
     });
 
     this.scene = new Scene();
