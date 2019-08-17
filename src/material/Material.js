@@ -12,7 +12,7 @@ export default class Material {
       vertexShaderSrc,
       fragmentShaderSrc,
     });
-    
+
     this._vertexShader = vertexShader;
     this._fragmentShader = fragmentShader;
 

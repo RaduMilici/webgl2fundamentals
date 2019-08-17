@@ -7,6 +7,6 @@ const randomColor = () => {
   const b = randomFloat(0, 1);
 
   return new Color({ r, g, b });
-}
+};
 
 export default randomColor;
