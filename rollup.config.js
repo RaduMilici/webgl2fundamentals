@@ -11,7 +11,6 @@ module.exports = {
   },
   plugins: [
     closure({
-      formatting: 'PRETTY_PRINT',
       module_resolution: 'NODE',
       compilation_level: 'ADVANCED',
     }),
