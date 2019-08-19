@@ -1,21 +1,1278 @@
-'use strict';(function(){let l=(a,b)=>a.findIndex(c=>c.id===b.id),q=(a,b)=>0<=b&&b<a.length?(a.splice(b,1),!0):!1;class e{constructor({x:a,y:b}={x:0,y:0}){this.x=a;this.y=b}clone(){return new e({x:this.x,y:this.y})}N(){return Math.sqrt(this.x*this.x+this.y*this.y)}Ia({x:a,y:b}){return this.x*a+this.y*b}add(a){return new e({x:this.x+a.x,y:this.y+a.y})}sub(a){return new e({x:this.x+-a.x,y:this.y+-a.y})}normalize(){let a=this.N();return new e({x:this.x/a,y:this.y/a})}scale(a){let b=this.normalize();
-return new e({x:b.x*a,y:b.y*a})}b(a){return this.x===a.x&&this.y===a.y}static oa(a){let b=0,c=0;a.forEach(d=>{b+=d.x;c+=d.y});b/=a.length;c/=a.length;return new e({x:b,y:c})}static Za(a){let b=e.oa(a);a=[...a];a.sort((c,d)=>Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(d.y-b.y,d.x-b.x));return a}static eb(a){return a.filter((b,c,d)=>d.findIndex(f=>b.b(f))===c)}angle(a){return Math.acos(this.Ia(a)/(this.N()*a.N()))}}let g=0;class h{constructor(a,b){this.g=a;this.c=b;this.id=g++}get length(){return this.g.sub(this.c).N()}clone(){return new h(this.g,
-this.c)}b(a){let b=this.g.b(a.c)&&this.c.b(a.g);return this.g.b(a.g)&&this.c.b(a.c)||b}static bb(a){return a.reduce((b,c)=>{b.push(...[c.g,c.c]);return b},[])}static pa(a,b){return void 0===b.find(c=>a.id===c.id?!1:a.b(c))}static cb(a){a=[...a];a.sort((b,c)=>b.length-c.length);for(let b=a.length-1;1<=b;b--)a[b].b(a[b-1])&&a.splice(b,1);return a}}class y{constructor(){this.elapsedTime=this.V=this.startTime=0;this.l=!1;this.ka="undefined"===typeof performance?Date:performance}start(){this.l=!0;this.V=
-this.startTime=this.ka.now();this.elapsedTime=0}stop(){this.l=!1}Ka(){let a=this.ka.now(),b=(a-this.V)/1E3;this.V=a;this.elapsedTime+=b;return b}}class r{constructor(a,b,c){this.g=a;this.c=b;this.Ga=c;this.id=g++;let d=new h(a,b);b=new h(b,c);a=new h(c,a);this.lines={A:d,B:b,C:a}}get Pa(){return[this.g,this.c,this.Ga]}get Na(){return[this.lines.A,this.lines.B,this.lines.C]}b(a){let {A:b,B:c,C:d}=this.lines,f=c.b(a.lines.A)||c.b(a.lines.B)||c.b(a.lines.C),m=d.b(a.lines.A)||d.b(a.lines.B)||d.b(a.lines.C);
-return(b.b(a.lines.A)||b.b(a.lines.B)||b.b(a.lines.C))&&f&&m}static qa(a){return a.reduce((b,c)=>{b.push(...c.Na);return b},[])}static ab(a){let b=r.qa(a);return b.filter(c=>h.pa(c,b))}}class k{constructor(){this.id=g++;this.ma=null}start(){}stop(){}update(){}}class z{constructor(a){this.s=a;this.entities=[]}start(){this.entities.forEach(a=>a.start())}stop(){this.entities.forEach(a=>a.stop())}clear(){this.entities.length=0}add(a){a.s=this.s;this.entities.push(a);return this.U(a.h,b=>{b.hb=a;return this.s.T(b)})}remove({h:a}){return this.U(a,
-b=>this.s.W(b))}toggle({h:a}){return this.U(a,b=>this.s.la(b))}U(a,b){return a.map(c=>({id:c.id,name:c.name,ib:b(c)}))}}class A{constructor(){this.Oa=new k;this.h=[];this.l=!1;this.L=new y;this.o=new z(this)}start(){return this.l?!1:(this.l=!0,this.L.start(),this.o.start(),this.h.forEach(a=>a.start()),this.update(),!0)}stop(){return this.l?(this.l=!1,cancelAnimationFrame(this.Ja),this.L.stop(),this.o.stop(),this.h.forEach(a=>a.stop()),!0):!1}clear(){this.stop();this.o.clear();this.h.length=0}add(a){return a instanceof
-k?this.T(a):this.o.add(a)}remove(a){return a instanceof k?this.W(a):this.o.remove(a)}toggle(a){return a instanceof k?this.la(a):this.o.toggle(a)}Ma(a){return-1!==l(this.h,a)}T(a){return this.Ma(a)?!1:(a.s=this,this.Qa(a),!0)}W(a){var b=this.h;a=l(b,a);return b=q(b,a)}la(a){return this.T(a)?!0:(this.W(a),!1)}La(){let a=this.L.Ka();return{fb:a,gb:1E3*a,elapsedTime:this.L.elapsedTime}}Qa(a){"number"===typeof a.ma?this.h.splice(a.ma,0,a):this.h.push(a)}update(){this.Ja=requestAnimationFrame(()=>this.update());
-let a=this.La();this.h.forEach(b=>{b.update(a)});this.Oa.update(a)}}class B{constructor({Ha:a,size:b,clearColor:c}){this.canvas=document.querySelector(a);if(!this.canvas instanceof HTMLCanvasElement)throw`Can't find canvas with selector ${a}.`;this.context=this.canvas.getContext("webgl2");let {width:d,height:f}=b;this.Ta({width:d,height:f});this.Sa(c)}Ta({width:a,height:b}){this.context.canvas.style.width=`${a}px`;this.context.canvas.style.height=`${b}px`;this.context.canvas.width=a;this.context.canvas.height=
-b;this.context.viewport(0,0,a,b)}Sa({r:a,j:b,c,g:d}){this.context.clearColor(a,b,c,d)}clear(){this.context.clear(this.context.COLOR_BUFFER_BIT|this.context.DEPTH_BUFFER_BIT)}Ra(...a){this.clear();a.forEach(b=>b.za())}}class t{constructor(a){this.Ba=a;this.na=this.xa();this.Da=this.wa()}xa(){return this.Ba.reduce((a,b)=>{a.push(...b.Pa);return a},[])}wa(){let a=this.na.reduce((b,{x:c,y:d})=>{b.push(c,d);return b},[]);return new Float32Array(a)}}class C{constructor({context:a,ga:b,ha:c}){this.id=g++;
-this.a=a;this.Y=b;this.m=c;this.Z=this.a.createBuffer();this.I=new Float32Array([0,0]);this.$=new Float32Array([0,1]);this.J=new Float32Array([1,1]);this.S=[];this.ya()}get position(){return{x:this.I[0],y:this.I[1]}}get scale(){return{x:this.J[0],y:this.J[1]}}set position({x:a,y:b}){this.I=new Float32Array([a,b]);this.P(()=>this.ba())}set rotation(a){this.$=new Float32Array([Math.sin(a),Math.cos(a)]);this.P(()=>this.ca())}set scale({x:a,y:b}){this.J=new Float32Array([a,b]);this.P(()=>this.da())}ya(){this.a.useProgram(this.m.w.f);
-this.a.bindBuffer(this.a.ARRAY_BUFFER,this.Z);this.da();this.ba();this.ca()}Aa(){this.a.useProgram(this.m.w.f);this.a.bindBuffer(this.a.ARRAY_BUFFER,this.Z);this.a.bufferData(this.a.ARRAY_BUFFER,this.Y.Da,this.a.STATIC_DRAW);this.m.sa();this.Ca();this.a.drawArrays(this.a.TRIANGLES,0,this.Y.na.length);this.a.useProgram(null)}ca(){this.a.uniform2fv(this.m.K.Va,this.$)}ba(){this.a.uniform2fv(this.m.K.Xa,this.I)}da(){this.a.uniform2fv(this.m.K.Wa,this.J)}P(a){this.S.push(a)}Ca(){this.S.forEach(a=>a());
-this.S.length=0}}class u{constructor({context:a,type:b,source:c}){this.id=g++;this.context=a;this.source=c;this.i=a.createShader(b);this.context.shaderSource(this.i,c);this.context.compileShader(this.i);this.verify()}delete(a){this.context.detachShader(a,this.i);this.context.deleteShader(this.i)}verify(){if(!this.context.getShaderParameter(this.i,this.context.COMPILE_STATUS)){let a=this.context.getShaderInfoLog(this.i);this.context.deleteShader(this.i);throw a;}}}class D extends u{constructor({context:a,
-source:b}){super({context:a,source:b,type:a.VERTEX_SHADER})}}class E extends u{constructor({context:a,source:b}){super({context:a,source:b,type:a.FRAGMENT_SHADER})}}class F{constructor({context:a,G:b,D:c,debug:d=!1}){this.context=a;this.f=a.createProgram();this.debug=d;this.Fa({G:b,D:c});a.linkProgram(this.f);this.verify();this.debug&&this.Ya();b.delete(this.f);c.delete(this.f)}Fa({G:a,D:b}){this.context.attachShader(this.f,a.i);this.context.attachShader(this.f,b.i)}verify(){if(!this.context.getProgramParameter(this.f,
-this.context.LINK_STATUS)){let a=this.context.getProgramInfoLog(this.f);this.context.deleteProgram(this.f);throw a;}}Ya(){this.context.validateProgram(this.f);if(!this.context.getProgramParameter(this.f,this.context.VALIDATE_STATUS)){let a=this.context.getProgramInfoLog(this.f);this.context.deleteProgram(this.f);throw a;}}}class v{constructor({context:a,O:b,M:c}){this.id=g++;this.a=a;let {G:d,D:f}=this.ra({context:this.a,O:b,M:c});this.Ea=d;this.ta=f;this.w=new F({context:this.a,G:this.Ea,D:this.ta,
-debug:!0});this.X=this.va();this.K=this.R()}ra({context:a,O:b,M:c}){b=new D({context:a,source:b});a=new E({context:a,source:c});return{G:b,D:a}}sa(){this.a.enableVertexAttribArray(this.X.ea);this.a.vertexAttribPointer(this.X.ea,2,this.a.FLOAT,this.a.$a,0,0)}va(){return{ea:this.ua()}}R(){return{Xa:this.H("u_translation"),Wa:this.H("u_scale"),Va:this.H("u_rotation")}}ua(){return this.a.getAttribLocation(this.w.f,"a_position")}H(a){return this.a.getUniformLocation(this.w.f,a)}}class n{constructor({r:a,
-j:b,c}){this.r=a;this.j=b;this.c=c}get values(){return new Float32Array([this.r,this.j,this.c])}}class G extends v{constructor({context:a}){super({context:a,O:"#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}",
-M:"#version 300 es\nprecision mediump float;uniform vec3 u_color;out vec4 frag_color;void main(){frag_color=vec4(u_color,1.);}"});this.u=(new n({r:1*Math.random(),j:1*Math.random(),c:1*Math.random()})).values;this.aa()}get color(){return new n({r:this.u[0],j:this.u[1],c:this.u[2]})}set color({values:a}){this.u=a;this.aa()}aa(){this.a.useProgram(this.w.f);this.a.uniform3fv(this.K.Ua,this.u);this.a.useProgram(null)}R(){return{...super.R(),Ua:this.H("u_color")}}}class H{constructor(){this.id=g++;this.v=
-[]}add(...a){a.forEach(b=>{-1!==l(this.v,b)||this.v.push(b)})}remove(...a){a.forEach(b=>{var c=this.v;b=l(c,b);return c=q(c,b)})}clear(){this.v.length=0}za(){this.v.forEach(a=>a.Aa())}}let w=a=>{const b=[];for(let d=0;d<a;d++){var c=new e({x:2*Math.random()+-1,y:2*Math.random()+-1});const f=new e({x:2*Math.random()+-1,y:2*Math.random()+-1}),m=new e({x:2*Math.random()+-1,y:2*Math.random()+-1});c=new r(c,f,m);b.push(c)}return b};class x extends C{update({elapsedTime:a}){let b=Math.sin(a);this.position=
-new e({x:b,y:b});this.rotation=.5*a}}class I extends k{constructor(){super();this.F=new B({Ha:"#webGl",clearColor:{r:0,j:0,c:0,g:1},size:{width:500,height:500}});let a=new v({context:this.F.context,O:"#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform vec2 u_translation;uniform vec2 u_rotation;uniform vec2 u_scale;uniform float u_pointSize;out vec3 fragColor;void main(){fragColor=a_vertColor;float rotatedX=a_position.x*u_rotation.y+a_position.y*u_rotation.x;float rotatedY=a_position.y*u_rotation.y-a_position.x*u_rotation.x;vec2 rotatedPosition=vec2(rotatedX,rotatedY);gl_PointSize=u_pointSize;gl_Position=vec4(rotatedPosition*u_scale+u_translation,0.,1.);}",
-M:"#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec2 xy=sin(gl_FragCoord.xy*0.05);float g=fract(xy.x*xy.y);color=vec4(0.,g,0.,1.);}"}),b=new G({context:this.F.context});b.color=new n({r:0,j:1,c:0});this.ia=new x({context:this.F.context,ga:new t(w(3)),ha:a});this.fa=new x({context:this.F.context,ga:new t(w(3)),ha:b});this.ja=new H;this.ja.add(this.ia,this.fa)}update(a){this.ia.update(a);this.fa.update(a);this.F.Ra(this.ja)}}let p=new A,J=new I;p.add(J);try{p.start()}catch(a){console.error(a),
-p.stop()}})();
+(function() {
+  'use strict';
+
+  const contains = (array, element) => {
+    return findIndex(array, element) !== -1;
+  };
+  const findIndex = (array, find) => {
+    return array.findIndex(element => element.id === find.id);
+  };
+  const removeFromArray = (array, find) => {
+    const index = findIndex(array, find);
+    return removeFromArrayAtIndex(array, index);
+  };
+  const removeFromArrayAtIndex = (array, index) => {
+    if (index >= 0 && index < array.length) {
+      array.splice(index, 1);
+      return true;
+    }
+    return false;
+  };
+
+  const RadToDeg = rad => rad * (180 / Math.PI);
+
+  const isNumeric = n => {
+    return !isNaN(parseFloat(n.toString())) && isFinite(n);
+  };
+
+  class Vector {
+    constructor({ x, y } = { x: 0, y: 0 }) {
+      this.x = x;
+      this.y = y;
+    }
+    clone() {
+      return new Vector({ x: this.x, y: this.y });
+    }
+    magnitude() {
+      const x = this.x * this.x;
+      const y = this.y * this.y;
+      const magnitude = Math.sqrt(x + y);
+      return magnitude;
+    }
+    dotProduct({ x, y }) {
+      return this.x * x + this.y * y;
+    }
+    add(vector) {
+      const x = this.x + vector.x;
+      const y = this.y + vector.y;
+      return new Vector({ x, y });
+    }
+    sub(vector) {
+      const x = this.x + -vector.x;
+      const y = this.y + -vector.y;
+      return new Vector({ x, y });
+    }
+    multiplyScalar(scalar) {
+      const x = this.x * scalar;
+      const y = this.y * scalar;
+      return new Vector({ x, y });
+    }
+    normalize() {
+      const magnitude = this.magnitude();
+      const x = this.x / magnitude;
+      const y = this.y / magnitude;
+      return new Vector({ x, y });
+    }
+    lerp(vector, alpha) {
+      const x = this.x + (vector.x - this.x) * alpha;
+      const y = this.y + (vector.y - this.y) * alpha;
+      return new Vector({ x, y });
+    }
+    negative() {
+      const x = -this.x;
+      const y = -this.y;
+      return new Vector({ x, y });
+    }
+    perpendicular() {
+      const right = new Vector({ x: -this.y, y: this.x });
+      const left = new Vector({ x: this.y, y: -this.x });
+      return { left, right };
+    }
+    scale(length) {
+      const normalized = this.normalize();
+      const x = normalized.x * length;
+      const y = normalized.y * length;
+      return new Vector({ x, y });
+    }
+    angleDeg(vector) {
+      const angle = this.angle(vector);
+      return RadToDeg(angle);
+    }
+    angleRad(vector) {
+      return this.angle(vector);
+    }
+    bisector(vector) {
+      const normalized = this.normalize();
+      const normalizedVector = vector.normalize();
+      const sum = normalized.add(normalizedVector);
+      const magnitude = (this.magnitude() + vector.magnitude()) / 2;
+      return sum.scale(magnitude);
+    }
+    equals(vector) {
+      return this.x === vector.x && this.y === vector.y;
+    }
+    distanceTo(vector) {
+      return this.sub(vector).magnitude();
+    }
+    midpoint(vector) {
+      const x = (this.x + vector.x) / 2;
+      const y = (this.y + vector.y) / 2;
+      return new Vector({ x, y });
+    }
+    static FindPolyCentroid(points) {
+      let x = 0;
+      let y = 0;
+      points.forEach(point => {
+        x += point.x;
+        y += point.y;
+      });
+      x /= points.length;
+      y /= points.length;
+      return new Vector({ x, y });
+    }
+    static ArrangePointsCCW(points) {
+      const centroid = Vector.FindPolyCentroid(points);
+      let clone = [...points];
+      clone.sort((a, b) => {
+        const angleA = Math.atan2(a.y - centroid.y, a.x - centroid.x);
+        const angleB = Math.atan2(b.y - centroid.y, b.x - centroid.x);
+        return angleA - angleB;
+      });
+      return clone;
+    }
+    static UniqueFromArray(points) {
+      const isUnique = (vector, index, array) => {
+        return (
+          array.findIndex(vectorIndex => {
+            return vector.equals(vectorIndex);
+          }) === index
+        );
+      };
+      return points.filter(isUnique);
+    }
+    angle(vector) {
+      const product = this.dotProduct(vector);
+      const cosAngle = product / (this.magnitude() * vector.magnitude());
+      return Math.acos(cosAngle);
+    }
+  }
+
+  const randomFloat = (min, max) => {
+    return Math.random() * (max - min) + min;
+  };
+
+  let id = 0;
+  const uniqueId = () => id++;
+
+  class DisjoinedSet {
+    constructor(point) {
+      this.id = uniqueId();
+      this.points = [point];
+    }
+    equals({ id }) {
+      return this.id === id;
+    }
+    merge({ points }) {
+      points.forEach(point => {
+        point.set = this;
+        this.points.push(point);
+      });
+      return this;
+    }
+  }
+
+  class Matrix {
+    constructor() {
+      this.rows = [];
+      this.columns = [];
+    }
+    static AddElements(elementsA, elementsB) {
+      return elementsA.map((elementA, index) => {
+        return elementA + elementsB[index];
+      });
+    }
+    static MultiplyElementsScalar(elements, scalar) {
+      let sum = new Array(elements.length).fill(0);
+      for (let i = 0; i < scalar; i++) {
+        sum = Matrix.AddElements(sum, elements);
+      }
+      return sum;
+    }
+    static Multiply(rows, columns) {
+      const elements = [];
+      rows.forEach(row => {
+        columns.forEach(column => {
+          const element = Matrix.CrossProduct(row, column);
+          elements.push(element);
+        });
+      });
+      return elements;
+    }
+    static CrossProduct(row, column) {
+      return row.reduce((acc, number, index) => {
+        acc += number * column[index];
+        return acc;
+      }, 0);
+    }
+  }
+  class Matrix2 extends Matrix {
+    constructor(a = 0, b = 0, c = 0, d = 0) {
+      super();
+      this.a = a;
+      this.b = b;
+      this.c = c;
+      this.d = d;
+      this.rows = [[a, b], [c, d]];
+      this.columns = [[a, c], [b, d]];
+    }
+    get elements() {
+      return [this.a, this.b, this.c, this.d];
+    }
+    determine() {
+      return this.a * this.d - this.b * this.c;
+    }
+    add({ elements }) {
+      const sum = Matrix.AddElements(this.elements, elements);
+      return new Matrix2(...sum);
+    }
+    multiply(m2) {
+      const product = Matrix.Multiply(this.rows, m2.columns);
+      return new Matrix2(...product);
+    }
+    multiplyScalar(scalar) {
+      const product = Matrix.MultiplyElementsScalar(this.elements, scalar);
+      return new Matrix2(...product);
+    }
+  }
+  class Matrix3 extends Matrix2 {
+    constructor(a = 0, b = 0, c = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0) {
+      super(a, b, c, d);
+      this.e = e;
+      this.f = f;
+      this.g = g;
+      this.h = h;
+      this.i = i;
+      this.rows = [[a, b, c], [d, e, f], [g, h, i]];
+      this.columns = [[a, d, g], [b, e, h], [c, f, i]];
+    }
+    get elements() {
+      return [...super.elements, this.e, this.f, this.g, this.h, this.i];
+    }
+    determine() {
+      return (
+        this.a * new Matrix2(this.e, this.f, this.h, this.i).determine() -
+        this.b * new Matrix2(this.d, this.f, this.g, this.i).determine() +
+        this.c * new Matrix2(this.d, this.e, this.g, this.h).determine()
+      );
+    }
+    add({ elements }) {
+      const sum = Matrix.AddElements(this.elements, elements);
+      return new Matrix3(...sum);
+    }
+    multiply({ columns }) {
+      const product = Matrix.Multiply(this.rows, columns);
+      return new Matrix3(...product);
+    }
+    multiplyScalar(scalar) {
+      const product = Matrix.MultiplyElementsScalar(this.elements, scalar);
+      return new Matrix3(...product);
+    }
+  }
+  class Matrix4 extends Matrix3 {
+    constructor(
+      a = 0,
+      b = 0,
+      c = 0,
+      d = 0,
+      e = 0,
+      f = 0,
+      g = 0,
+      h = 0,
+      i = 0,
+      j = 0,
+      k = 0,
+      l = 0,
+      m = 0,
+      n = 0,
+      o = 0,
+      p = 0
+    ) {
+      super(a, b, c, d, e, f, g, h, i);
+      this.j = j;
+      this.k = k;
+      this.l = l;
+      this.m = m;
+      this.n = n;
+      this.o = o;
+      this.p = p;
+      this.rows = [[a, b, c, d], [e, f, g, h], [i, j, k, l], [m, n, o, p]];
+      this.columns = [[a, e, i, m], [b, f, j, n], [c, g, k, o], [d, h, l, p]];
+    }
+    get elements() {
+      return [...super.elements, this.j, this.k, this.l, this.m, this.n, this.o, this.p];
+    }
+    determine() {
+      return (
+        this.a *
+          new Matrix3(
+            this.f,
+            this.g,
+            this.h,
+            this.j,
+            this.k,
+            this.l,
+            this.n,
+            this.o,
+            this.p
+          ).determine() -
+        this.b *
+          new Matrix3(
+            this.e,
+            this.g,
+            this.h,
+            this.i,
+            this.k,
+            this.l,
+            this.m,
+            this.o,
+            this.p
+          ).determine() +
+        this.c *
+          new Matrix3(
+            this.e,
+            this.f,
+            this.h,
+            this.i,
+            this.j,
+            this.l,
+            this.m,
+            this.n,
+            this.p
+          ).determine() -
+        this.d *
+          new Matrix3(
+            this.e,
+            this.f,
+            this.g,
+            this.i,
+            this.j,
+            this.k,
+            this.m,
+            this.n,
+            this.o
+          ).determine()
+      );
+    }
+    add({ elements }) {
+      const sum = Matrix.AddElements(this.elements, elements);
+      return new Matrix4(...sum);
+    }
+    multiplyScalar(scalar) {
+      const product = Matrix.MultiplyElementsScalar(this.elements, scalar);
+      return new Matrix4(...product);
+    }
+    multiply({ columns }) {
+      const product = Matrix.Multiply(this.rows, columns);
+      return new Matrix4(...product);
+    }
+  }
+
+  // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+  class LineIntersection {
+    constructor(line1, line2) {
+      this.line1 = line1;
+      this.line2 = line2;
+      // points
+      this.x1 = this.line1.a.x;
+      this.y1 = this.line1.a.y;
+      this.x2 = this.line1.b.x;
+      this.y2 = this.line1.b.y;
+      this.x3 = this.line2.a.x;
+      this.y3 = this.line2.a.y;
+      this.x4 = this.line2.b.x;
+      this.y4 = this.line2.b.y;
+      // shared matrices
+      const e = new Matrix2(this.x1, 1, this.x2, 1);
+      const f = new Matrix2(this.y1, 1, this.y2, 1);
+      const g = new Matrix2(this.x3, 1, this.x4, 1);
+      const h = new Matrix2(this.y3, 1, this.y4, 1);
+      const efgh = new Matrix2(e.determine(), f.determine(), g.determine(), h.determine());
+      this.efghDeterminant = efgh.determine();
+    }
+    get intersects() {
+      const areValidCoords = isNumeric(this.point.x) && isNumeric(this.point.y);
+      return areValidCoords && this.isOnSegments();
+    }
+    get point() {
+      const x = this.getX();
+      const y = this.getY();
+      return new Vector({ x, y });
+    }
+    getX() {
+      const a = new Matrix2(this.x1, this.y1, this.x2, this.y2);
+      const b = new Matrix2(this.x1, 1, this.x2, 1);
+      const c = new Matrix2(this.x3, this.y3, this.x4, this.y4);
+      const d = new Matrix2(this.x3, 1, this.x4, 1);
+      const abcd = new Matrix2(a.determine(), b.determine(), c.determine(), d.determine());
+      return abcd.determine() / this.efghDeterminant;
+    }
+    getY() {
+      const a = new Matrix2(this.x1, this.y1, this.x2, this.y2);
+      const b = new Matrix2(this.y1, 1, this.y2, 1);
+      const c = new Matrix2(this.x3, this.y3, this.x4, this.y4);
+      const d = new Matrix2(this.y3, 1, this.y4, 1);
+      const abcd = new Matrix2(a.determine(), b.determine(), c.determine(), d.determine());
+      return abcd.determine() / this.efghDeterminant;
+    }
+    isOnSegments() {
+      const a = new Matrix2(
+        this.x1 - this.x3,
+        this.x3 - this.x4,
+        this.y1 - this.y3,
+        this.y3 - this.y4
+      );
+      const b = new Matrix2(
+        this.x1 - this.x2,
+        this.x3 - this.x4,
+        this.y1 - this.y2,
+        this.y3 - this.y4
+      );
+      const c = new Matrix2(
+        this.x1 - this.x2,
+        this.x1 - this.x3,
+        this.y1 - this.y2,
+        this.y1 - this.y3
+      );
+      const d = new Matrix2(
+        this.x1 - this.x2,
+        this.x3 - this.x4,
+        this.y1 - this.y2,
+        this.y3 - this.y4
+      );
+      const divisionAB = a.determine() / b.determine();
+      const divisionCD = -(c.determine() / d.determine());
+      const isOnSegmentA = divisionAB >= 0 && divisionAB <= 1;
+      const isOnSegmentB = divisionCD >= 0 && divisionCD <= 1;
+      return isOnSegmentA && isOnSegmentB;
+    }
+  }
+
+  class Line {
+    constructor(a, b) {
+      this.a = a;
+      this.b = b;
+      this.id = uniqueId();
+    }
+    get length() {
+      return this.a.sub(this.b).magnitude();
+    }
+    get midpoint() {
+      return this.a.midpoint(this.b);
+    }
+    clone() {
+      return new Line(this.a, this.b);
+    }
+    equals(line) {
+      const equalsNormal = this.a.equals(line.a) && this.b.equals(line.b);
+      const equalsReverse = this.a.equals(line.b) && this.b.equals(line.a);
+      return equalsNormal || equalsReverse;
+    }
+    intersects(line) {
+      return new LineIntersection(this, line).intersects;
+    }
+    intersectionPoint(line) {
+      return new LineIntersection(this, line).point;
+    }
+    makeDisjoinedSets() {
+      this.a.set = new DisjoinedSet(this.a);
+      this.b.set = new DisjoinedSet(this.b);
+    }
+    static PointsFromArray(lines) {
+      return lines.reduce((accumulator, line) => {
+        accumulator.push(...[line.a, line.b]);
+        return accumulator;
+      }, []);
+    }
+    static IsUnique(line, lines) {
+      return (
+        lines.find(currentLine => {
+          return line.id === currentLine.id ? false : line.equals(currentLine);
+        }) === undefined
+      );
+    }
+    static RemoveDuplicates(lines) {
+      let clone = [...lines];
+      clone.sort((a, b) => a.length - b.length);
+      for (let i = clone.length - 1; i >= 1; i--) {
+        const a = clone[i];
+        const b = clone[i - 1];
+        if (a.equals(b)) {
+          clone.splice(i, 1);
+        }
+      }
+      return clone;
+    }
+  }
+
+  class Clock {
+    constructor() {
+      this.startTime = 0;
+      this.oldTime = 0;
+      this.elapsedTime = 0;
+      this.running = false;
+      this.timeFunction = typeof performance === 'undefined' ? Date : performance;
+    }
+    start() {
+      this.running = true;
+      this.startTime = this.timeFunction.now();
+      this.oldTime = this.startTime;
+      this.elapsedTime = 0;
+    }
+    stop() {
+      this.running = false;
+    }
+    getDelta() {
+      const newTime = this.timeFunction.now();
+      const difference = (newTime - this.oldTime) / 1000;
+      this.oldTime = newTime;
+      this.elapsedTime += difference;
+      return difference;
+    }
+    getElapsed() {
+      return this.elapsedTime;
+    }
+  }
+
+  class Triangle {
+    constructor(a, b, c) {
+      this.a = a;
+      this.b = b;
+      this.c = c;
+      this.id = uniqueId();
+      const ab = new Line(a, b);
+      const bc = new Line(b, c);
+      const ca = new Line(c, a);
+      this.lines = { ab, bc, ca };
+    }
+    get centroid() {
+      return Vector.FindPolyCentroid(this.points);
+    }
+    get points() {
+      return [this.a, this.b, this.c];
+    }
+    get linesArray() {
+      return [this.lines.ab, this.lines.bc, this.lines.ca];
+    }
+    equals(triangle) {
+      const { ab, bc, ca } = this.lines;
+      const sameAB =
+        ab.equals(triangle.lines.ab) ||
+        ab.equals(triangle.lines.bc) ||
+        ab.equals(triangle.lines.ca);
+      const sameBC =
+        bc.equals(triangle.lines.ab) ||
+        bc.equals(triangle.lines.bc) ||
+        bc.equals(triangle.lines.ca);
+      const sameCA =
+        ca.equals(triangle.lines.ab) ||
+        ca.equals(triangle.lines.bc) ||
+        ca.equals(triangle.lines.ca);
+      return sameAB && sameBC && sameCA;
+    }
+    isPointInCircumcircle(point) {
+      const ax = this.a.x;
+      const ay = this.a.y;
+      const bx = this.b.x;
+      const by = this.b.y;
+      const cx = this.c.x;
+      const cy = this.c.y;
+      const a = ax;
+      const b = ay;
+      const c = ax * ax + ay * ay;
+      const d = 1;
+      const e = bx;
+      const f = by;
+      const g = bx * bx + by * by;
+      const h = 1;
+      const i = cx;
+      const j = cy;
+      const k = cx * cx + cy * cy;
+      const l = 1;
+      const m = point.x;
+      const n = point.y;
+      const o = point.x * point.x + point.y * point.y;
+      const p = 1;
+      const matrix = new Matrix4(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p);
+      return matrix.determine() < 0;
+    }
+    hasPoint(point) {
+      return this.a.equals(point) || this.b.equals(point) || this.c.equals(point);
+    }
+    hasAnyPoint(points) {
+      return (
+        points.filter(point => {
+          return this.hasPoint(point);
+        }).length !== 0
+      );
+    }
+    static LinesFromArray(triangles) {
+      return triangles.reduce((accumulator, triangle) => {
+        accumulator.push(...triangle.linesArray);
+        return accumulator;
+      }, []);
+    }
+    static GetUniqueLines(triangles) {
+      const lines = Triangle.LinesFromArray(triangles);
+      return lines.filter(line => Line.IsUnique(line, lines));
+    }
+  }
+
+  class Component {
+    constructor() {
+      this.id = uniqueId();
+      this.updatePriority = null;
+    }
+    start() {}
+    stop() {}
+    update(tickData) {}
+  }
+
+  class EntityUpdater {
+    constructor(updater) {
+      this.updater = updater;
+      this.entities = [];
+    }
+    start() {
+      this.entities.forEach(entity => entity.start());
+    }
+    stop() {
+      this.entities.forEach(entity => entity.stop());
+    }
+    clear() {
+      this.entities.length = 0;
+    }
+    add(entity) {
+      entity.updater = this.updater;
+      this.entities.push(entity);
+      const callback = component => {
+        component.entity = entity;
+        return this.updater.addComponent(component);
+      };
+      return this.loopComponents(entity.components, callback);
+    }
+    remove({ components }) {
+      const callback = component => this.updater.removeComponent(component);
+      return this.loopComponents(components, callback);
+    }
+    toggle({ components }) {
+      const callback = component => this.updater.toggleComponent(component);
+      return this.loopComponents(components, callback);
+    }
+    loopComponents(components, callback) {
+      return components.map(component => {
+        return {
+          id: component.id,
+          name: component.name,
+          success: callback(component),
+        };
+      });
+    }
+  }
+
+  class Invoke extends Component {
+    constructor(updater, component, timeout) {
+      super();
+      this.updater = updater;
+      this.component = component;
+      this.timeout = timeout;
+      this.id = uniqueId();
+      this.originalTimeout = timeout;
+    }
+    update(tickData) {
+      this.timeout -= tickData.deltaTimeMS;
+      if (this.timeout <= 0) {
+        this.component.update(tickData);
+        this.stop();
+      }
+    }
+    stop() {
+      return this.updater.remove(this);
+    }
+  }
+
+  class InvokeRepeating extends Invoke {
+    constructor(updater, component, interval, times) {
+      super(updater, component, interval);
+      this.times = times;
+      this.updated = 0;
+    }
+    update(tickData) {
+      this.timeout -= tickData.deltaTimeMS;
+      if (this.timeout <= 0) {
+        if (++this.updated === this.times) {
+          this.stop();
+        }
+        this.component.update(tickData);
+        this.timeout = this.originalTimeout;
+      }
+    }
+  }
+
+  class Updater {
+    constructor() {
+      this.onUpdateComplete = new Component();
+      this.components = [];
+      this.running = false;
+      this.clock = new Clock();
+      this.entityUpdater = new EntityUpdater(this);
+    }
+    start() {
+      if (!this.running) {
+        this.running = true;
+        this.clock.start();
+        this.entityUpdater.start();
+        this.components.forEach(component => component.start());
+        this.update();
+        return true;
+      }
+      return false;
+    }
+    stop() {
+      if (this.running) {
+        this.running = false;
+        cancelAnimationFrame(this.frameId);
+        this.clock.stop();
+        this.entityUpdater.stop();
+        this.components.forEach(component => component.stop());
+        return true;
+      }
+      return false;
+    }
+    clear() {
+      this.stop();
+      this.entityUpdater.clear();
+      this.components.length = 0;
+    }
+    add(behaviour) {
+      if (behaviour instanceof Component) {
+        return this.addComponent(behaviour);
+      } else {
+        return this.entityUpdater.add(behaviour);
+      }
+    }
+    remove(behaviour) {
+      if (behaviour instanceof Component) {
+        return this.removeComponent(behaviour);
+      } else {
+        return this.entityUpdater.remove(behaviour);
+      }
+    }
+    toggle(behaviour) {
+      if (behaviour instanceof Component) {
+        return this.toggleComponent(behaviour);
+      } else {
+        return this.entityUpdater.toggle(behaviour);
+      }
+    }
+    isUpdatingComponent(component) {
+      return contains(this.components, component);
+    }
+    addComponent(component) {
+      if (!this.isUpdatingComponent(component)) {
+        component.updater = this;
+        this.pushToQueue(component);
+        return true;
+      }
+      return false;
+    }
+    removeComponent(component) {
+      return removeFromArray(this.components, component);
+    }
+    toggleComponent(component) {
+      if (!this.addComponent(component)) {
+        this.removeComponent(component);
+        return false;
+      }
+      return true;
+    }
+    invoke(component, time) {
+      const invoke = new Invoke(this, component, time);
+      this.add(invoke);
+    }
+    invokeRepeating(component, time, times = Infinity) {
+      const invoke = new InvokeRepeating(this, component, time, times);
+      this.add(invoke);
+    }
+    getTickData() {
+      const deltaTime = this.clock.getDelta();
+      const deltaTimeMS = deltaTime * 1000;
+      const elapsedTime = this.clock.getElapsed();
+      return { deltaTime, deltaTimeMS, elapsedTime };
+    }
+    pushToQueue(component) {
+      if (typeof component.updatePriority === 'number') {
+        this.components.splice(component.updatePriority, 0, component);
+      } else {
+        this.components.push(component);
+      }
+    }
+    update() {
+      this.frameId = requestAnimationFrame(() => this.update());
+      const tickData = this.getTickData();
+      this.components.forEach(component => {
+        component.update(tickData);
+      });
+      this.onUpdateComplete.update(tickData);
+    }
+  }
+
+  class Renderer {
+    constructor({ canvasSelector, size, clearColor }) {
+      this.canvas = document.querySelector(canvasSelector);
+
+      if (!this.canvas instanceof HTMLCanvasElement) {
+        throw `Can't find canvas with selector ${canvasSelector}.`;
+      }
+
+      this.context = this.canvas.getContext('webgl2');
+      const { width, height } = size;
+      this.setSize({ width, height });
+      this.setClearColor(clearColor);
+    }
+
+    setSize({ width, height }) {
+      this.context.canvas.style.width = `${width}px`;
+      this.context.canvas.style.height = `${height}px`;
+      this.context.canvas.width = width;
+      this.context.canvas.height = height;
+      this.context.viewport(0, 0, width, height);
+    }
+
+    setClearColor({ r, g, b, a }) {
+      this.context.clearColor(r, g, b, a);
+    }
+
+    clear() {
+      this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
+    }
+
+    render(...scenes) {
+      this.clear();
+      scenes.forEach(scene => scene._renderChildren());
+    }
+  }
+
+  class Geometry {
+    constructor(triangles) {
+      this._triangles = triangles;
+      this.vertices = this._getVertices();
+      this._vertexCoords = this._getVertexCoords();
+    }
+
+    _getVertices() {
+      return this._triangles.reduce((acc, triangle) => {
+        acc.push(...triangle.points);
+        return acc;
+      }, []);
+    }
+
+    _getVertexCoords() {
+      const coords = this.vertices.reduce((acc, { x, y }) => {
+        acc.push(x, y);
+        return acc;
+      }, []);
+
+      return new Float32Array(coords);
+    }
+  }
+
+  var fsSource =
+    '#version 300 es\nprecision mediump float;out vec4 color;in vec3 fragColor;void main(){vec2 xy=sin(gl_FragCoord.xy*0.05);float g=fract(xy.x*xy.y);color=vec4(0.,g,0.,1.);}';
+
+  var vsSource =
+    '#version 300 es\nin vec2 a_position;in vec3 a_vertColor;uniform float u_pointSize;uniform mat3 u_matrix;out vec3 fragColor;void main(){fragColor=a_vertColor;gl_PointSize=u_pointSize;gl_Position=vec4(u_matrix*vec3(a_position,1.),1.);}';
+
+  class Mesh {
+    constructor({ context, geometry, material }) {
+      this.id = uniqueId();
+      this._context = context;
+      this._geometry = geometry;
+      this._material = material;
+      this._geometryBuffer = this._context.createBuffer();
+      this._position = null;
+      this._rotation = null;
+      this._scale = null;
+      this._matrices = {
+        position: null,
+        rotation: null,
+        scale: null,
+      };
+      this._init();
+    }
+
+    get position() {
+      return {
+        x: this._position[0],
+        y: this._position[1],
+      };
+    }
+
+    get scale() {
+      return {
+        x: this._scale[0],
+        y: this._scale[1],
+      };
+    }
+
+    set position({ x, y }) {
+      this._position = [x, y];
+      this._matrices.position = new Matrix3(1, 0, 0, 0, 1, 0, x, y, 1);
+    }
+
+    set rotation(radians) {
+      const sin = Math.sin(radians);
+      const cos = Math.cos(radians);
+      this._rotation = [sin, cos];
+      this._matrices.rotation = new Matrix3(cos, -sin, 0, sin, cos, 0, 0, 0, 1);
+    }
+
+    set scale({ x, y }) {
+      this._scale = [x, y];
+      this._matrices.scale = new Matrix3(x, 0, 0, 0, y, 0, 0, 0, 1);
+    }
+
+    _init() {
+      this.position = { x: 0, y: 0 };
+      this.rotation = 0;
+      this.scale = { x: 1, y: 1 };
+    }
+
+    _renderImmediate() {
+      this._context.useProgram(this._material._program.gl_program);
+      this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
+      this._context.bufferData(
+        this._context.ARRAY_BUFFER,
+        this._geometry._vertexCoords,
+        this._context.STATIC_DRAW
+      );
+      this._material._enableAttribs();
+      this._updateTranslation();
+      this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
+      this._context.useProgram(null);
+    }
+
+    _updateTranslation() {
+      const { elements } = this._matrices.position
+        .multiply(this._matrices.rotation)
+        .multiply(this._matrices.scale);
+      this._context.uniformMatrix3fv(this._material._uniforms.uMatrixLoc, false, elements);
+    }
+  }
+
+  class Shader {
+    constructor({ context, type, source }) {
+      this.id = uniqueId();
+      this.context = context;
+      this.source = source;
+      this.gl_shader = context.createShader(type);
+      this.context.shaderSource(this.gl_shader, source);
+      this.context.compileShader(this.gl_shader);
+      this.verify();
+    }
+
+    delete(program) {
+      this.context.detachShader(program, this.gl_shader);
+      this.context.deleteShader(this.gl_shader);
+    }
+
+    verify() {
+      const success = this.context.getShaderParameter(this.gl_shader, this.context.COMPILE_STATUS);
+
+      if (!success) {
+        const infoLog = this.context.getShaderInfoLog(this.gl_shader);
+        this.context.deleteShader(this.gl_shader);
+        throw infoLog;
+      }
+    }
+  }
+
+  class VertexShader extends Shader {
+    constructor({ context, source }) {
+      super({
+        context,
+        source,
+        type: context.VERTEX_SHADER,
+      });
+    }
+  }
+
+  class FragmentShader extends Shader {
+    constructor({ context, source }) {
+      super({
+        context,
+        source,
+        type: context.FRAGMENT_SHADER,
+      });
+    }
+  }
+
+  class Program {
+    constructor({ context, vertexShader, fragmentShader, debug = false }) {
+      this.context = context;
+      this.gl_program = context.createProgram();
+      this.debug = debug;
+      this.attachShaders({ vertexShader, fragmentShader });
+      context.linkProgram(this.gl_program);
+      this.verify();
+      if (this.debug) {
+        this.validate();
+      }
+      vertexShader.delete(this.gl_program);
+      fragmentShader.delete(this.gl_program);
+    }
+
+    attachShaders({ vertexShader, fragmentShader }) {
+      this.context.attachShader(this.gl_program, vertexShader.gl_shader);
+      this.context.attachShader(this.gl_program, fragmentShader.gl_shader);
+    }
+
+    verify() {
+      const success = this.context.getProgramParameter(this.gl_program, this.context.LINK_STATUS);
+
+      if (!success) {
+        const infoLog = this.context.getProgramInfoLog(this.gl_program);
+        this.context.deleteProgram(this.gl_program);
+        throw infoLog;
+      }
+    }
+
+    validate() {
+      this.context.validateProgram(this.gl_program);
+      const success = this.context.getProgramParameter(
+        this.gl_program,
+        this.context.VALIDATE_STATUS
+      );
+
+      if (!success) {
+        const infoLog = this.context.getProgramInfoLog(this.gl_program);
+        this.context.deleteProgram(this.gl_program);
+        throw infoLog;
+      }
+    }
+  }
+
+  class Material {
+    constructor({ context, vertexShaderSrc, fragmentShaderSrc }) {
+      this.id = uniqueId();
+      this._context = context;
+
+      const { vertexShader, fragmentShader } = this._compileShders({
+        context: this._context,
+        vertexShaderSrc,
+        fragmentShaderSrc,
+      });
+
+      this._vertexShader = vertexShader;
+      this._fragmentShader = fragmentShader;
+
+      this._program = new Program({
+        context: this._context,
+        vertexShader: this._vertexShader,
+        fragmentShader: this._fragmentShader,
+        debug: true,
+      });
+
+      this._attributes = this._getAttributes();
+      this._uniforms = this._getUniforms();
+    }
+
+    _compileShders({ context, vertexShaderSrc, fragmentShaderSrc }) {
+      const vertexShader = new VertexShader({ context, source: vertexShaderSrc });
+      const fragmentShader = new FragmentShader({ context, source: fragmentShaderSrc });
+      return { vertexShader, fragmentShader };
+    }
+
+    _enableAttribs() {
+      this._context.enableVertexAttribArray(this._attributes.aPositionLoc);
+
+      this._context.vertexAttribPointer(
+        this._attributes.aPositionLoc,
+        2,
+        this._context.FLOAT,
+        this._context.FALSE,
+        0,
+        0
+      );
+    }
+
+    _getAttributes() {
+      const aPositionLoc = this._getAttribLocation('a_position');
+      return { aPositionLoc };
+    }
+
+    _getUniforms() {
+      const uMatrixLoc = this._getUniformLocation('u_matrix');
+      return { uMatrixLoc };
+    }
+
+    _getAttribLocation(name) {
+      return this._context.getAttribLocation(this._program.gl_program, name);
+    }
+
+    _getUniformLocation(name) {
+      return this._context.getUniformLocation(this._program.gl_program, name);
+    }
+  }
+
+  var fragmentShaderSrc =
+    '#version 300 es\nprecision mediump float;uniform vec3 u_color;out vec4 frag_color;void main(){frag_color=vec4(u_color,1.);}';
+
+  class Color {
+    constructor({ r, g, b }) {
+      this.r = r;
+      this.g = g;
+      this.b = b;
+    }
+
+    get values() {
+      return new Float32Array([this.r, this.g, this.b]);
+    }
+  }
+
+  const randomColor = () => {
+    const r = randomFloat(0, 1);
+    const g = randomFloat(0, 1);
+    const b = randomFloat(0, 1);
+
+    return new Color({ r, g, b });
+  };
+
+  class BasicMaterial extends Material {
+    constructor({ context }) {
+      super({ context, vertexShaderSrc: vsSource, fragmentShaderSrc });
+      this._color = randomColor().values;
+      this._setColor();
+    }
+
+    get color() {
+      const r = this._color[0];
+      const g = this._color[1];
+      const b = this._color[2];
+      return new Color({ r, g, b });
+    }
+
+    set color({ values }) {
+      this._color = values;
+      this._setColor();
+    }
+
+    _setColor() {
+      this._context.useProgram(this._program.gl_program);
+      this._context.uniform3fv(this._uniforms.uColorLoc, this._color);
+      this._context.useProgram(null);
+    }
+
+    _getUniforms() {
+      return {
+        ...super._getUniforms(),
+        uColorLoc: this._getUniformLocation('u_color'),
+      };
+    }
+  }
+
+  class Scene {
+    constructor() {
+      this.id = uniqueId();
+      this._objects = [];
+    }
+
+    add(...objects) {
+      objects.forEach(object => {
+        if (!contains(this._objects, object)) {
+          this._objects.push(object);
+        }
+      });
+    }
+
+    remove(...objects) {
+      objects.forEach(object => removeFromArray(this._objects, object));
+    }
+
+    clear() {
+      this._objects.length = 0;
+    }
+    _renderChildren() {
+      this._objects.forEach(child => child._renderImmediate());
+    }
+
+    _getChildIndex(object) {
+      return this._objects.indexOf(object);
+    }
+  }
+
+  const randomTris = num => {
+    const tris = [];
+
+    for (let i = 0; i < num; i++) {
+      const a = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+      const b = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+      const c = new Vector({ x: randomFloat(-1, 1), y: randomFloat(-1, 1) });
+      const triangle = new Triangle(a, b, c);
+      tris.push(triangle);
+    }
+
+    return tris;
+  };
+
+  class RotatingMesh extends Mesh {
+    update({ elapsedTime }) {
+      this.rotation = elapsedTime * 0.5;
+    }
+  }
+
+  class Draw extends Component {
+    constructor() {
+      super();
+
+      this.renderer = new Renderer({
+        canvasSelector: '#webGl',
+        clearColor: { r: 0, g: 0, b: 0, a: 1 },
+        size: { width: 500, height: 500 },
+      });
+
+      const material = new Material({
+        context: this.renderer.context,
+        vertexShaderSrc: vsSource,
+        fragmentShaderSrc: fsSource,
+      });
+
+      const basicMaterial = new BasicMaterial({
+        context: this.renderer.context,
+      });
+      basicMaterial.color = new Color({ r: 0, g: 0, b: 1 });
+
+      this.mesh = new RotatingMesh({
+        context: this.renderer.context,
+        geometry: new Geometry(randomTris(3)),
+        material,
+      });
+
+      this.basicMesh = new RotatingMesh({
+        context: this.renderer.context,
+        geometry: new Geometry(randomTris(3)),
+        material: basicMaterial,
+      });
+
+      this.scene = new Scene();
+      this.scene.add(this.mesh, this.basicMesh);
+    }
+
+    update(timeData) {
+      this.mesh.update(timeData);
+      this.basicMesh.update(timeData);
+      this.renderer.render(this.scene);
+    }
+  }
+
+  const updater = new Updater();
+  const draw = new Draw();
+
+  updater.add(draw);
+
+  try {
+    updater.start();
+  } catch (e) {
+    console.error(e);
+    updater.stop();
+  }
+})();

@@ -12,8 +12,6 @@ import Color from './Color';
 
 class RotatingMesh extends Mesh {
   update({ elapsedTime }) {
-    const posX = Math.sin(elapsedTime);
-    this.position = new Vector({ x: posX, y: posX });
     this.rotation = elapsedTime * 0.5;
   }
 }
@@ -37,7 +35,7 @@ class Draw extends Component {
     const basicMaterial = new BasicMaterial({
       context: this.renderer.context,
     });
-    basicMaterial.color = new Color({ r: 0, g: 1, b: 0 });
+    basicMaterial.color = new Color({ r: 0, g: 0, b: 1 });
 
     this.mesh = new RotatingMesh({
       context: this.renderer.context,

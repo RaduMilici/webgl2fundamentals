@@ -52,11 +52,8 @@ export default class Material {
   }
 
   _getUniforms() {
-    const uTranslationLoc = this._getUniformLocation('u_translation');
-    const uScaleLoc = this._getUniformLocation('u_scale');
-    const uRotationLoc = this._getUniformLocation('u_rotation');
-
-    return { uTranslationLoc, uScaleLoc, uRotationLoc };
+    const uMatrixLoc = this._getUniformLocation('u_matrix');
+    return { uMatrixLoc };
   }
 
   _getAttribLocation(name) {

@@ -1,4 +1,4 @@
-import { uniqueId } from 'pulsar-pathfinding';
+import { uniqueId, Matrix3 } from 'pulsar-pathfinding';
 
 export default class Mesh {
   constructor({ context, geometry, material }) {
@@ -7,10 +7,14 @@ export default class Mesh {
     this._geometry = geometry;
     this._material = material;
     this._geometryBuffer = this._context.createBuffer();
-    this._position = new Float32Array([0, 0]);
-    this._rotation = new Float32Array([0, 1]);
-    this._scale = new Float32Array([1, 1]);
-    this._updateQ = [];
+    this._position = null;
+    this._rotation = null;
+    this._scale = null;
+    this._matrices = {
+      position: null,
+      rotation: null,
+      scale: null,
+    };
     this._init();
   }
 
@@ -29,26 +33,26 @@ export default class Mesh {
   }
 
   set position({ x, y }) {
-    this._position = new Float32Array([x, y]);
-    this._addUpdate(() => this._setPositionUniform());
+    this._position = [x, y];
+    this._matrices.position = new Matrix3(1, 0, 0, 0, 1, 0, x, y, 1);
   }
 
   set rotation(radians) {
-    this._rotation = new Float32Array([Math.sin(radians), Math.cos(radians)]);
-    this._addUpdate(() => this._setRotationUniform());
+    const sin = Math.sin(radians);
+    const cos = Math.cos(radians);
+    this._rotation = [sin, cos];
+    this._matrices.rotation = new Matrix3(cos, -sin, 0, sin, cos, 0, 0, 0, 1);
   }
 
   set scale({ x, y }) {
-    this._scale = new Float32Array([x, y]);
-    this._addUpdate(() => this._setScaleUniform());
+    this._scale = [x, y];
+    this._matrices.scale = new Matrix3(x, 0, 0, 0, y, 0, 0, 0, 1);
   }
 
   _init() {
-    this._context.useProgram(this._material._program.gl_program);
-    this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
-    this._setScaleUniform();
-    this._setPositionUniform();
-    this._setRotationUniform();
+    this.position = { x: 0, y: 0 };
+    this.rotation = 0;
+    this.scale = { x: 1, y: 1 };
   }
 
   _renderImmediate() {
@@ -60,29 +64,15 @@ export default class Mesh {
       this._context.STATIC_DRAW
     );
     this._material._enableAttribs();
-    this._update();
+    this._updateTranslation();
     this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
     this._context.useProgram(null);
   }
 
-  _setRotationUniform() {
-    this._context.uniform2fv(this._material._uniforms.uRotationLoc, this._rotation);
-  }
-
-  _setPositionUniform() {
-    this._context.uniform2fv(this._material._uniforms.uTranslationLoc, this._position);
-  }
-
-  _setScaleUniform() {
-    this._context.uniform2fv(this._material._uniforms.uScaleLoc, this._scale);
-  }
-
-  _addUpdate(callback) {
-    this._updateQ.push(callback);
-  }
-
-  _update() {
-    this._updateQ.forEach(update => update());
-    this._updateQ.length = 0;
+  _updateTranslation() {
+    const { elements } = this._matrices.position
+      .multiply(this._matrices.rotation)
+      .multiply(this._matrices.scale);
+    this._context.uniformMatrix3fv(this._material._uniforms.uMatrixLoc, false, elements);
   }
 }

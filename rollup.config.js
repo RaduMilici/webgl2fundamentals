@@ -10,10 +10,10 @@ module.exports = {
     format: 'iife',
   },
   plugins: [
-    closure({
+    /*closure({
       module_resolution: 'NODE',
       compilation_level: 'ADVANCED',
-    }),
+    }),*/
     resolve(),
     glsl({
       include: 'src/**/*.glsl',
