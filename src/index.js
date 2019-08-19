@@ -1,18 +1,16 @@
-import { Updater, Component, Vector } from 'pulsar-pathfinding';
+import { Updater, Component, randomFloat } from 'pulsar-pathfinding';
 import Renderer from './Renderer';
-import Geometry from './Geometry';
-import fsSource from './shaders/sinColor_FS.glsl';
-import vsSource from './shaders/vertexShader.glsl';
+import Geometry from './geometry/Geometry';
 import Mesh from './Mesh';
-import Material from './material/Material';
 import BasicMaterial from './material/BasicMaterial';
 import Scene from './Scene';
-import randomTris from './utils/random-tris';
+import { randomTris3D } from './utils/random-tris';
 import Color from './Color';
+import fGeometry from './geometry/F';
 
 class RotatingMesh extends Mesh {
   update({ elapsedTime }) {
-    this.rotation = elapsedTime * 0.5;
+    this.rotation = { x: 0, y: elapsedTime * 0.5, z: 0 };
   }
 }
 
@@ -23,39 +21,39 @@ class Draw extends Component {
     this.renderer = new Renderer({
       canvasSelector: '#webGl',
       clearColor: { r: 0, g: 0, b: 0, a: 1 },
-      size: { width: 500, height: 500 },
+      size: { width: 500, height: 500, depth: 100 },
     });
 
-    const material = new Material({
+    const basicMaterial1 = new BasicMaterial({
       context: this.renderer.context,
-      vertexShaderSrc: vsSource,
-      fragmentShaderSrc: fsSource,
+    });
+    basicMaterial1.color = new Color({ r: 0, g: 0, b: 1 });
+
+    const basicMaterial2 = new BasicMaterial({
+      context: this.renderer.context,
+    });
+    basicMaterial2.color = new Color({ r: 0, g: 1, b: 0 });
+
+    this.mesh1 = new RotatingMesh({
+      context: this.renderer.context,
+      geometry: new Geometry(randomTris3D(3, { width: 500, height: 500, depth: 100 })),
+      material: basicMaterial1,
     });
 
-    const basicMaterial = new BasicMaterial({
+    this.mesh2 = new RotatingMesh({
       context: this.renderer.context,
+      geometry: fGeometry,
+      material: basicMaterial2,
     });
-    basicMaterial.color = new Color({ r: 0, g: 0, b: 1 });
-
-    this.mesh = new RotatingMesh({
-      context: this.renderer.context,
-      geometry: new Geometry(randomTris(3)),
-      material,
-    });
-
-    this.basicMesh = new RotatingMesh({
-      context: this.renderer.context,
-      geometry: new Geometry(randomTris(3)),
-      material: basicMaterial,
-    });
+    this.mesh2.position = { x: 1, y: -1, z: 0 };
 
     this.scene = new Scene();
-    this.scene.add(this.mesh, this.basicMesh);
+    this.scene.add(this.mesh1, this.mesh2);
   }
 
   update(timeData) {
-    this.mesh.update(timeData);
-    this.basicMesh.update(timeData);
+    this.mesh1.update(timeData);
+    this.mesh2.update(timeData);
     this.renderer.render(this.scene);
   }
 }

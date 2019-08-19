@@ -13,8 +13,8 @@ export default class Geometry {
   }
 
   _getVertexCoords() {
-    const coords = this.vertices.reduce((acc, { x, y }) => {
-      acc.push(x, y);
+    const coords = this.vertices.reduce((acc, { x, y, z }) => {
+      acc.push(x, y, z);
       return acc;
     }, []);
 

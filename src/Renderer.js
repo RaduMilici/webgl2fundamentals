@@ -1,3 +1,5 @@
+import { OrthographicProjectionMatrix } from './matrices';
+
 export default class Renderer {
   constructor({ canvasSelector, size, clearColor }) {
     this.canvas = document.querySelector(canvasSelector);
@@ -7,9 +9,19 @@ export default class Renderer {
     }
 
     this.context = this.canvas.getContext('webgl2');
-    const { width, height } = size;
+    const { width, height, depth } = size;
     this.setSize({ width, height });
     this.setClearColor(clearColor);
+    //this._projectionMatrix = new ProjectionMatrix({ width, height, depth });
+    this._projectionMatrix = new OrthographicProjectionMatrix({
+      left: 0,
+      right: width,
+      bottom: height,
+      top: 0,
+      near: 400,
+      far: -400,
+    });
+    console.log(this._projectionMatrix);
   }
 
   setSize({ width, height }) {
@@ -30,6 +42,10 @@ export default class Renderer {
 
   render(...scenes) {
     this.clear();
-    scenes.forEach(scene => scene._renderChildren());
+    scenes.forEach(scene =>
+      scene._renderChildren({
+        projectionMatrix: this._projectionMatrix,
+      })
+    );
   }
 }

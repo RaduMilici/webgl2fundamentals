@@ -7,7 +7,7 @@
     "dev": "concurrently \"lite-server\" \"npm run build-watch\"",
     "build": "rollup src/index.js --config",
     "build-watch": "rollup src/index.js --watch --config",
-    "format": "prettier --single-quote --print-width 100 --trailing-comma es5 --write $(git ls-files \"*.js\")"
+    "format": "prettier --single-quote --print-width 100 --trailing-comma es5 --write 'src/**/*.js'"
   },
   "repository": {
     "type": "git",

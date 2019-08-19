@@ -1,4 +1,11 @@
-import { uniqueId, Matrix3 } from 'pulsar-pathfinding';
+import { uniqueId, Matrix4 } from 'pulsar-pathfinding';
+import {
+  PositionMatrix,
+  ScaleMatrix,
+  XRotationMatrix,
+  YRotationMatrix,
+  ZRotationMatrix,
+} from './matrices';
 
 export default class Mesh {
   constructor({ context, geometry, material }) {
@@ -12,7 +19,11 @@ export default class Mesh {
     this._scale = null;
     this._matrices = {
       position: null,
-      rotation: null,
+      rotation: {
+        x: null,
+        y: null,
+        z: null,
+      },
       scale: null,
     };
     this._init();
@@ -29,33 +40,46 @@ export default class Mesh {
     return {
       x: this._scale[0],
       y: this._scale[1],
+      z: this._scale[2],
     };
   }
 
-  set position({ x, y }) {
-    this._position = [x, y];
-    this._matrices.position = new Matrix3(1, 0, 0, 0, 1, 0, x, y, 1);
+  set position({ x, y, z }) {
+    this._position = [x, y, z];
+    this._matrices.position = new PositionMatrix({ x, y, z });
   }
 
-  set rotation(radians) {
-    const sin = Math.sin(radians);
-    const cos = Math.cos(radians);
-    this._rotation = [sin, cos];
-    this._matrices.rotation = new Matrix3(cos, -sin, 0, sin, cos, 0, 0, 0, 1);
+  set rotation({ x, y, z }) {
+    this._rotation = [x, y, z];
+    this.rotationX = x;
+    this.rotationY = y;
+    this.rotationZ = z;
   }
 
-  set scale({ x, y }) {
-    this._scale = [x, y];
-    this._matrices.scale = new Matrix3(x, 0, 0, 0, y, 0, 0, 0, 1);
+  set rotationX(radians) {
+    this._matrices.rotation.x = new XRotationMatrix(radians);
+  }
+
+  set rotationY(radians) {
+    this._matrices.rotation.y = new YRotationMatrix(radians);
+  }
+
+  set rotationZ(radians) {
+    this._matrices.rotation.z = new ZRotationMatrix(radians);
+  }
+
+  set scale({ x, y, z }) {
+    this._scale = [x, y, z];
+    this._matrices.scale = new ScaleMatrix({ x, y, z });
   }
 
   _init() {
-    this.position = { x: 0, y: 0 };
-    this.rotation = 0;
-    this.scale = { x: 1, y: 1 };
+    this.position = { x: 0, y: 0, z: 0 };
+    this.rotation = { x: 0, y: 0, z: 0 };
+    this.scale = { x: 1, y: 1, z: 1 };
   }
 
-  _renderImmediate() {
+  _renderImmediate({ projectionMatrix }) {
     this._context.useProgram(this._material._program.gl_program);
     this._context.bindBuffer(this._context.ARRAY_BUFFER, this._geometryBuffer);
     this._context.bufferData(
@@ -64,15 +88,18 @@ export default class Mesh {
       this._context.STATIC_DRAW
     );
     this._material._enableAttribs();
-    this._updateTranslation();
+    this._updateTranslation(projectionMatrix);
     this._context.drawArrays(this._context.TRIANGLES, 0, this._geometry.vertices.length);
     this._context.useProgram(null);
   }
 
-  _updateTranslation() {
-    const { elements } = this._matrices.position
-      .multiply(this._matrices.rotation)
+  _updateTranslation(projectionMatrix) {
+    const { elements } = projectionMatrix
+      .multiply(this._matrices.position)
+      .multiply(this._matrices.rotation.x)
+      .multiply(this._matrices.rotation.y)
+      .multiply(this._matrices.rotation.z)
       .multiply(this._matrices.scale);
-    this._context.uniformMatrix3fv(this._material._uniforms.uMatrixLoc, false, elements);
+    this._context.uniformMatrix4fv(this._material._uniforms.uMatrixLoc, false, elements);
   }
 }

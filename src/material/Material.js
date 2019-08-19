@@ -38,7 +38,7 @@ export default class Material {
 
     this._context.vertexAttribPointer(
       this._attributes.aPositionLoc,
-      2,
+      3,
       this._context.FLOAT,
       this._context.FALSE,
       0,

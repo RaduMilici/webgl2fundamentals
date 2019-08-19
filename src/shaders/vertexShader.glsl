@@ -1,15 +1,9 @@
 #version 300 es
 
-in vec2 a_position;
-in vec3 a_vertColor;
+in vec4 a_position;
 
-uniform float u_pointSize;
-uniform mat3 u_matrix;
-
-out vec3 fragColor;
+uniform mat4 u_matrix;
 
 void main() {
-  fragColor = a_vertColor;  
-  gl_PointSize = u_pointSize;
-  gl_Position = vec4(u_matrix * vec3(a_position, 1.), 1.);
+  gl_Position = u_matrix * a_position;
 }

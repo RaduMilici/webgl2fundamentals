@@ -21,8 +21,8 @@ export default class Scene {
   clear() {
     this._objects.length = 0;
   }
-  _renderChildren() {
-    this._objects.forEach(child => child._renderImmediate());
+  _renderChildren({ projectionMatrix }) {
+    this._objects.forEach(child => child._renderImmediate({ projectionMatrix }));
   }
 
   _getChildIndex(object) {
