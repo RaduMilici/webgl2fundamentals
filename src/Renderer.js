@@ -18,10 +18,9 @@ export default class Renderer {
       right: width,
       bottom: height,
       top: 0,
-      near: 400,
-      far: -400,
+      near: depth,
+      far: -depth,
     });
-    console.log(this._projectionMatrix);
   }
 
   setSize({ width, height }) {

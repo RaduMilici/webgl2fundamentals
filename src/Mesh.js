@@ -1,4 +1,4 @@
-import { uniqueId, Matrix4 } from 'pulsar-pathfinding';
+import { uniqueId } from 'pulsar-pathfinding';
 import {
   PositionMatrix,
   ScaleMatrix,
@@ -60,7 +60,7 @@ export default class Mesh {
     this._matrices.rotation.x = new XRotationMatrix(radians);
   }
 
-  set rotationY(radians) {
+  set rotationY(radians) {    
     this._matrices.rotation.y = new YRotationMatrix(radians);
   }
 
@@ -94,12 +94,13 @@ export default class Mesh {
   }
 
   _updateTranslation(projectionMatrix) {
-    const { elements } = projectionMatrix
-      .multiply(this._matrices.position)
-      .multiply(this._matrices.rotation.x)
-      .multiply(this._matrices.rotation.y)
-      .multiply(this._matrices.rotation.z)
-      .multiply(this._matrices.scale);
-    this._context.uniformMatrix4fv(this._material._uniforms.uMatrixLoc, false, elements);
+    const translationMatrix = 
+      projectionMatrix
+        .multiply(this._matrices.position)
+        .multiply(this._matrices.rotation.x)
+        .multiply(this._matrices.rotation.y)
+        .multiply(this._matrices.rotation.z)
+        .multiply(this._matrices.scale);
+    this._context.uniformMatrix4fv(this._material._uniforms.uMatrixLoc, false, translationMatrix.elements);
   }
 }

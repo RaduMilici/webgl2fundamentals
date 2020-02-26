@@ -1,4 +1,4 @@
-import { Updater, Component, randomFloat } from 'pulsar-pathfinding';
+import { Updater, Component, DegToRad } from 'pulsar-pathfinding';
 import Renderer from './Renderer';
 import Geometry from './geometry/Geometry';
 import Mesh from './Mesh';
@@ -6,11 +6,12 @@ import BasicMaterial from './material/BasicMaterial';
 import Scene from './Scene';
 import { randomTris3D } from './utils/random-tris';
 import Color from './Color';
+import Vector3 from './geometry/Vector3';
 import fGeometry from './geometry/F';
 
 class RotatingMesh extends Mesh {
   update({ elapsedTime }) {
-    this.rotation = { x: 0, y: elapsedTime * 0.5, z: 0 };
+    //this.rotation = { x: 0, y: elapsedTime * 0.5, z: 0 };
   }
 }
 
@@ -45,10 +46,11 @@ class Draw extends Component {
       geometry: fGeometry,
       material: basicMaterial2,
     });
-    this.mesh2.position = { x: 1, y: -1, z: 0 };
+    this.mesh2.position = new Vector3({ x: 1, y: 0, z: 0 });
+    //this.mesh2.rotation = new Vector3({ x: 0, y: DegToRad(45), z: 0 });
 
     this.scene = new Scene();
-    this.scene.add(this.mesh1, this.mesh2);
+    this.scene.add(/*this.mesh1,*/ this.mesh2);
   }
 
   update(timeData) {
@@ -65,6 +67,7 @@ updater.add(draw);
 
 try {
   updater.start();
+  updater.stop();
 } catch (e) {
   console.error(e);
   updater.stop();
